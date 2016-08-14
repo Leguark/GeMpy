@@ -121,14 +121,14 @@ class GeoMigSim_pro2:
 
 
         #self.n_layers = len(layers_n)
-        self.dips = T.dmatrix("dips")
-        self.layers = T.dmatrix('position of the layers')
-        self.X = T.dmatrix('X')
-        self.Y = T.dmatrix('Y')
+        self.dips = T.fmatrix("dips")
+        self.layers = T.fmatrix('position of the layers')
+        self.X = T.fmatrix('X')
+        self.Y = T.fmatrix('Y')
 
 
-        self.V1 = T.dmatrix('V1')
-        self.V2 = T.dmatrix('V2')
+        self.V1 = T.fmatrix('V1')
+        self.V2 = T.fmatrix('V2')
         self.layers = T.fmatrix("layers")
         perpendicularity_matrix = T.bmatrix
 
@@ -202,10 +202,6 @@ class GeoMigSim_pro2:
         dips = T.dmatrix("dips")
 
 
-
-
-
-
     def call_theano_for_CI(self, layers):
 
         auxi = np.vstack((i[1:] for i in layers))
@@ -241,20 +237,20 @@ class GeoMigSim_pro2:
 
 
         g = np.meshgrid(
-            np.linspace(x_min,x_max,nx),
-            np.linspace(y_min,y_max,ny),
+            np.linspace(x_min,x_max,nx, dtype="float32"),
+            np.linspace(y_min,y_max,ny, dtype="float32"),
         )
 
-        self.grid = np.vstack(map(np.ravel,g)).T
+        self.grid = np.vstack(map(np.ravel,g)).T.astype("float32")
 
 
     def theano_set3(self):
 
 
-        dips_position = T.dmatrix("Position of the dips")
-        dip_angles = T.dvector("Angle of every dip")
-        ref_layer_points = T.dmatrix("Reference points for every layer")
-        rest_layer_points = T.dmatrix("Rest of the points of the layers")
+        dips_position = T.matrix("Position of the dips")
+        dip_angles = T.vector("Angle of every dip")
+        ref_layer_points = T.matrix("Reference points for every layer")
+        rest_layer_points = T.matrix("Rest of the points of the layers")
         grid_val = theano.shared(self.grid, "Positions of the points to interpolate")
 
         # Init values
@@ -529,6 +525,9 @@ class GeoMigSim_pro2:
 
         weigths = T.tile(DK_parameters, (grid_val.shape[0],1)).T
 
+
+
+
         sigma_0_grad = (T.sum(
             weigths[:length_of_CG, :] * hu_SimPoint/SED_dips_SimPoint
             * (
@@ -559,7 +558,8 @@ class GeoMigSim_pro2:
         Z_x = sigma_0_grad + sigma_0_interf + f_0
         """
         """
-        self.geoMigueller = theano.function([dips_position, dip_angles, rest_layer_points, ref_layer_points], [Z_x, C_G], on_unused_input="warn")
+        self.geoMigueller = theano.function([dips_position, dip_angles, rest_layer_points, ref_layer_points], [Z_x,
+                                                                                                               SED_ref_SimPoint, weigths], on_unused_input="warn", profile= True)
 
 
 
