@@ -246,7 +246,6 @@ class GeoMigSim_pro2:
 
     def theano_set3(self):
 
-
         dips_position = T.matrix("Position of the dips")
         dip_angles = T.vector("Angle of every dip")
         ref_layer_points = T.matrix("Reference points for every layer")
@@ -268,7 +267,6 @@ class GeoMigSim_pro2:
         # Intermediate steps for the calculation of the covariance function
 
         # Auxiliar tile for dips
-
 
         _aux_dips_pos = T.tile(dips_position, (n_dimensions,1))
 
@@ -310,7 +308,6 @@ class GeoMigSim_pro2:
             (ref_layer_points ** 2).sum(1).reshape((1, ref_layer_points.shape[0])) -
             2 * _aux_dips_pos.dot(ref_layer_points.T))
 
-
         # Cartesian distances between dips positions
 
         h_u = T.vertical_stack(
@@ -318,17 +315,14 @@ class GeoMigSim_pro2:
             T.tile(dips_position[:, 1] - dips_position[:, 1].reshape((dips_position[:, 1].shape[0], 1)), 2), ) #y
         # T.tile(self.dips[:,2] - self.dips[:,2].reshape((self.dips[:,2].shape[0],1)),3))          #z
 
-
-        h_v = -h_u.T
+        h_v = h_u.T
 
         # Cartesian distances between dips and interface points
-
 
         hu_rest = T.vertical_stack(
         (dips_position[:, 0] - rest_layer_points[:, 0].reshape((rest_layer_points[:, 0].shape[0], 1))).T,
         (dips_position[:, 1] - rest_layer_points[:, 1].reshape((rest_layer_points[:, 1].shape[0], 1))).T
         )
-
 
         hu_ref = T.vertical_stack(
         (dips_position[:, 0] - ref_layer_points[:, 0].reshape((ref_layer_points[:, 0].shape[0], 1))).T,
@@ -358,7 +352,6 @@ class GeoMigSim_pro2:
         #        perpendicularity_matrix[self.dips.shape[1]*2:self.dips.shape[1]*3,
         #       self.dips.shape[1]*2:self.dips.shape[1] * 3 ], 1)
 
-
         # ==================
         # Covariance matrix for interfaces
 
@@ -381,31 +374,32 @@ class GeoMigSim_pro2:
             3 / 4 * (SED_ref_ref / self.a) ** 7)
         )
 
-
         # =============
         # Covariance matrix for gradients at every xyz direction
 
         C_G = T.switch(
-                       T.eq(SED_dips_dips,0), # This is the condition
-                       0,                     # If true it is equal to c_o
+                       T.eq(SED_dips_dips, 0), # This is the condition
+                       0,                     # If true it is equal to 0. This is how a direction affect another
                        (                      # else
-            self.c_o*((h_u*h_v/SED_dips_dips**2)* (1/SED_dips_dips)*
-            (SED_dips_dips < self.a) * (                                # first derivative
-            -7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *
-            (8 * self.a ** 2 + 9 * self.a * SED_dips_dips + 3 * SED_dips_dips ** 2) * 1) /
-            (4 * self.a ** 7) -
-            (SED_dips_dips < self.a) * (                                # Second derivative
-            -7 * (4. * self.a ** 5. - 15. * self.a ** 4. * SED_dips_dips + 20. *
-            (self.a ** 2) * (SED_dips_dips ** 3) - 9 * SED_dips_dips ** 5) * 1) /
-            (2 * self.a ** 7)) +
-            self.c_o * perpendicularity_matrix *
-            (SED_dips_dips < self.a) * (                                 # first derivative
-             -7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *
-             (8 * self.a ** 2 + 9 * self.a * SED_dips_dips + 3 * SED_dips_dips ** 2) * 1) /
-             (4 * self.a ** 7)
+                        #self.c_o*
+                         (-h_u*h_v/SED_dips_dips**2)* ((1/SED_dips_dips) *
+                         (SED_dips_dips < self.a) * (                                # first derivative
+                         -7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *
+                         (8 * self.a ** 2 + 9 * self.a * SED_dips_dips + 3 * SED_dips_dips ** 2) * 1) /
+                         (4 * self.a ** 7) -
+                         (SED_dips_dips < self.a) * (                                # Second derivative
+                         -7 * (4. * self.a ** 5. - 15. * self.a ** 4. * SED_dips_dips + 20. *
+                         (self.a ** 2) * (SED_dips_dips ** 3) - 9 * SED_dips_dips ** 5) * 1) /
+                         (2 * self.a ** 7)) +
+                        # self.c_o *
+                         perpendicularity_matrix *
+                        (SED_dips_dips < self.a) * (                                 # first derivative
+                         -7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *
+                         (8 * self.a ** 2 + 9 * self.a * SED_dips_dips + 3 * SED_dips_dips ** 2) * 1) /
+                         (4 * self.a ** 7)
                         )
                        )
-        C_G = T.fill_diagonal(C_G,self.c_o)
+        C_G = T.fill_diagonal(C_G, self.c_o) # This sets the variance of the dips
 
         # ============
         # Cross-Covariance gradients-interfaces
@@ -422,7 +416,6 @@ class GeoMigSim_pro2:
             (8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * 1) /
             (4 * self.a ** 7)
         ).T
-
 
         # ==========================
         # Condition of universality
@@ -559,7 +552,7 @@ class GeoMigSim_pro2:
         """
         """
         self.geoMigueller = theano.function([dips_position, dip_angles, rest_layer_points, ref_layer_points], [Z_x,
-                                                                                                               SED_ref_SimPoint, weigths], on_unused_input="warn", profile= True)
+                                C_I,C_G,C_GI,weigths], on_unused_input="warn", profile= True)
 
 
 
