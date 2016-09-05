@@ -233,7 +233,7 @@ class GeoMigSim_pro2:
 
 
 
-    def create_regular_grid(self, x_min,x_max, y_min, y_max, nx,ny):
+    def create_regular_grid_2D(self, x_min,x_max, y_min, y_max, nx,ny):
 
 
         g = np.meshgrid(
@@ -243,8 +243,15 @@ class GeoMigSim_pro2:
 
         self.grid = np.vstack(map(np.ravel,g)).T.astype("float32")
 
+    def create_regular_grid_3D(self, x_min, x_max, y_min, y_max, z_min, z_max, nx, ny, nz):
+        g = np.meshgrid(
+            np.linspace(x_min, x_max, nx, dtype="float32"),
+            np.linspace(y_min, y_max, ny, dtype="float32"),
+            np.linspace(z_min, z_max, nz, dtype="float32")
+        )
+        self.grid = np.vstack(map(np.ravel, g)).T.astype("float32")
 
-    def theano_set3(self):
+    def theano_set_2D(self):
 
         dips_position = T.matrix("Position of the dips")
         dip_angles = T.vector("Angle of every dip")
@@ -337,15 +344,15 @@ class GeoMigSim_pro2:
 
         # Perpendicularity matrix
 
-        perpendicularity_matrix = T.zeros_like(SED_dips_dips)
+        perpendicularity_matrix = T.ones_like(SED_dips_dips)
         # 1D
         perpendicularity_matrix = T.set_subtensor(
-            perpendicularity_matrix[dips_position.shape[1], :dips_position.shape[1]], 1)
+            perpendicularity_matrix[0:dips_position.shape[1], 0:dips_position.shape[1]], 0)
 
         # 2D
         perpendicularity_matrix = T.set_subtensor(
             perpendicularity_matrix[dips_position.shape[1]:dips_position.shape[1] * 2,
-            dips_position.shape[1]:dips_position.shape[1] * 2], 1)
+            dips_position.shape[1]:dips_position.shape[1] * 2], 0)
 
         # 3D
         #    perpendicularity_matrix = T.set_subtensor(
@@ -374,6 +381,11 @@ class GeoMigSim_pro2:
             3 / 4 * (SED_ref_ref / self.a) ** 7)
         )
 
+        printme = ( perpendicularity_matrix *
+                        (SED_dips_dips < self.a) * (                                 # first derivative
+                         -7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *
+                         (8 * self.a ** 2 + 9 * self.a * SED_dips_dips + 3 * SED_dips_dips ** 2) * 1) /
+                         (4 * self.a ** 7))
         # =============
         # Covariance matrix for gradients at every xyz direction
 
@@ -441,7 +453,7 @@ class GeoMigSim_pro2:
         C_matrix = T.zeros((length_of_C, length_of_C))
 
         # First row of matrices
-        C_matrix = T.set_subtensor(C_matrix[0:length_of_CG , 0:length_of_CG], C_G)
+        C_matrix = T.set_subtensor(C_matrix[0:length_of_CG , 0:length_of_CG], -C_G)
 
         C_matrix = T.set_subtensor(
             C_matrix[0:length_of_CG , length_of_CG:length_of_CG  + length_of_CGI], C_GI.T)
@@ -552,7 +564,330 @@ class GeoMigSim_pro2:
         """
         """
         self.geoMigueller = theano.function([dips_position, dip_angles, rest_layer_points, ref_layer_points], [Z_x,
-                                C_I,C_G,C_GI,weigths], on_unused_input="warn", profile= True)
+                                C_I,C_G,C_GI,C_matrix, b, weigths,
+                            printme, perpendicularity_matrix], on_unused_input="warn", profile= True)
+
+    def theano_set_3D(self):
+        dips_position = T.matrix("Position of the dips")
+        dip_angles = T.vector("Angle of every dip")
+        azimuth = T.vector("Azimuth")
+        polarity = T.vector("Polarity")
+        ref_layer_points = T.matrix("Reference points for every layer")
+        rest_layer_points = T.matrix("Rest of the points of the layers")
+        grid_val = theano.shared(self.grid, "Positions of the points to interpolate")
+
+        # Init values
+
+        n_dimensions = 3
+        grade_universal = 3
+
+        length_of_CG = dips_position.shape[0] * n_dimensions
+        length_of_CGI = rest_layer_points.shape[0]
+        length_of_U_I = grade_universal
+        length_of_C = length_of_CG + length_of_CGI + length_of_U_I
+
+        # ======
+        # Intermediate steps for the calculation of the covariance function
+
+        # Auxiliar tile for dips
+
+        _aux_dips_pos = T.tile(dips_position, (n_dimensions, 1))
+
+        # Calculation of euclidian distances between the different elements
+
+        SED_rest_rest = T.sqrt(
+            (rest_layer_points ** 2).sum(1).reshape((rest_layer_points.shape[0], 1)) +
+            (rest_layer_points ** 2).sum(1).reshape((1, rest_layer_points.shape[0])) -
+            2 * rest_layer_points.dot(rest_layer_points.T))
+
+        SED_ref_rest = T.sqrt(
+            (ref_layer_points ** 2).sum(1).reshape((ref_layer_points.shape[0], 1)) +
+            (rest_layer_points ** 2).sum(1).reshape((1, rest_layer_points.shape[0])) -
+            2 * ref_layer_points.dot(rest_layer_points.T))
+
+        SED_rest_ref = T.sqrt(
+            (rest_layer_points ** 2).sum(1).reshape((rest_layer_points.shape[0], 1)) +
+            (ref_layer_points ** 2).sum(1).reshape((1, ref_layer_points.shape[0])) -
+            2 * rest_layer_points.dot(ref_layer_points.T))
+
+        SED_ref_ref = T.sqrt(
+            (ref_layer_points ** 2).sum(1).reshape((ref_layer_points.shape[0], 1)) +
+            (ref_layer_points ** 2).sum(1).reshape((1, ref_layer_points.shape[0])) -
+            2 * ref_layer_points.dot(ref_layer_points.T))
+
+        SED_dips_dips = T.sqrt(
+            (_aux_dips_pos ** 2).sum(1).reshape((_aux_dips_pos.shape[0], 1)) +
+            (_aux_dips_pos ** 2).sum(1).reshape((1, _aux_dips_pos.shape[0])) -
+            2 * _aux_dips_pos.dot(_aux_dips_pos.T))
+
+        SED_dips_rest = T.sqrt(
+            (_aux_dips_pos ** 2).sum(1).reshape((_aux_dips_pos.shape[0], 1)) +
+            (rest_layer_points ** 2).sum(1).reshape((1, rest_layer_points.shape[0])) -
+            2 * _aux_dips_pos.dot(rest_layer_points.T))
+
+        SED_dips_ref = T.sqrt(
+            (_aux_dips_pos ** 2).sum(1).reshape((_aux_dips_pos.shape[0], 1)) +
+            (ref_layer_points ** 2).sum(1).reshape((1, ref_layer_points.shape[0])) -
+            2 * _aux_dips_pos.dot(ref_layer_points.T))
+
+        # Cartesian distances between dips positions
+
+        h_u = T.vertical_stack(
+            T.tile(dips_position[:, 0] - dips_position[:, 0].reshape((dips_position[:, 0].shape[0], 1)), n_dimensions),  # x
+            T.tile(dips_position[:, 1] - dips_position[:, 1].reshape((dips_position[:, 1].shape[0], 1)), n_dimensions),  # y
+            T.tile(dips_position[:, 2] - dips_position[:, 2].reshape((dips_position[:, 2].shape[0], 1)),n_dimensions))          #z
+
+        h_v = h_u.T
+
+        # Cartesian distances between dips and interface points
+        # Rest
+        hu_rest = T.vertical_stack(
+            (dips_position[:, 0] - rest_layer_points[:, 0].reshape((rest_layer_points[:, 0].shape[0], 1))).T,
+            (dips_position[:, 1] - rest_layer_points[:, 1].reshape((rest_layer_points[:, 1].shape[0], 1))).T,
+            (dips_position[:, 2] - rest_layer_points[:, 2].reshape((rest_layer_points[:, 2].shape[0], 1))).T
+        )
+
+        # Reference point
+        hu_ref = T.vertical_stack(
+            (dips_position[:, 0] - ref_layer_points[:, 0].reshape((ref_layer_points[:, 0].shape[0], 1))).T,
+            (dips_position[:, 1] - ref_layer_points[:, 1].reshape((ref_layer_points[:, 1].shape[0], 1))).T,
+            (dips_position[:, 2] - ref_layer_points[:, 2].reshape((ref_layer_points[:, 2].shape[0], 1))).T
+                                )
+
+        # Cartesian distances between reference points and rest
+
+        hx = T.stack(
+            (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
+            (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
+            (rest_layer_points[:, 2] - ref_layer_points[:, 2])
+                    ).T
+
+        # Perpendicularity matrix
+
+        perpendicularity_matrix = T.ones_like(SED_dips_dips)
+        # 1D
+        perpendicularity_matrix = T.set_subtensor(
+            perpendicularity_matrix[0:dips_position.shape[1], 0:dips_position.shape[1]], 0)
+
+        # 2D
+        perpendicularity_matrix = T.set_subtensor(
+            perpendicularity_matrix[dips_position.shape[1]:dips_position.shape[1] * 2,
+            dips_position.shape[1]:dips_position.shape[1] * 2], 0)
+
+        # 3D
+        perpendicularity_matrix = T.set_subtensor(
+            perpendicularity_matrix[dips_position.shape[1]*2:dips_position.shape[1] * 3,
+            dips_position.shape[1]*2:dips_position.shape[1] * 3], 0)
+
+        # ==================
+        # Covariance matrix for interfaces
+
+        C_I = (
+            (SED_rest_rest < self.a) * (1 - 7 * (SED_rest_rest / self.a) ** 2 +
+                                        35 / 4 * (SED_rest_rest / self.a) ** 3 -
+                                        7 / 2 * (SED_rest_rest / self.a) ** 5 +
+                                        3 / 4 * (SED_rest_rest / self.a) ** 7) -
+            (SED_ref_rest < self.a) * (1 - 7 * (SED_ref_rest / self.a) ** 2 +
+                                       35 / 4 * (SED_ref_rest / self.a) ** 3 -
+                                       7 / 2 * (SED_ref_rest / self.a) ** 5 +
+                                       3 / 4 * (SED_ref_rest / self.a) ** 7) -
+            (SED_rest_ref < self.a) * (1 - 7 * (SED_rest_ref / self.a) ** 2 +
+                                       35 / 4 * (SED_rest_ref / self.a) ** 3 -
+                                       7 / 2 * (SED_rest_ref / self.a) ** 5 +
+                                       3 / 4 * (SED_rest_ref / self.a) ** 7) +
+            (SED_ref_ref < self.a) * (1 - 7 * (SED_ref_ref / self.a) ** 2 +
+                                      35 / 4 * (SED_ref_ref / self.a) ** 3 -
+                                      7 / 2 * (SED_ref_ref / self.a) ** 5 +
+                                      3 / 4 * (SED_ref_ref / self.a) ** 7)
+        )
+
+        printme = (perpendicularity_matrix *
+                   (SED_dips_dips < self.a) * (  # first derivative
+                       -7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *
+                       (8 * self.a ** 2 + 9 * self.a * SED_dips_dips + 3 * SED_dips_dips ** 2) * 1) /
+                   (4 * self.a ** 7))
+        # =============
+        # Covariance matrix for gradients at every xyz direction
+
+        C_G = T.switch(
+            T.eq(SED_dips_dips, 0),  # This is the condition
+            0,  # If true it is equal to 0. This is how a direction affect another
+            (  # else
+                # self.c_o*
+                (-h_u * h_v / SED_dips_dips ** 2) *
+                ((1 / SED_dips_dips) *
+                 (SED_dips_dips < self.a) * (  # first derivative
+                     -7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *
+                     (
+                     8 * self.a ** 2 + 9 * self.a * SED_dips_dips + 3 * SED_dips_dips ** 2) * 1) /
+                 (4 * self.a ** 7) -
+                 (SED_dips_dips < self.a) * (  # Second derivative
+                     -7 * (
+                     4. * self.a ** 5. - 15. * self.a ** 4. * SED_dips_dips + 20. *
+                     (self.a ** 2) * (
+                     SED_dips_dips ** 3) - 9 * SED_dips_dips ** 5) * 1) /
+                 (2 * self.a ** 7)) +
+                # self.c_o *
+                perpendicularity_matrix *
+                (SED_dips_dips < self.a) * (  # first derivative
+                    -7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *
+                    (8 * self.a ** 2 + 9 * self.a * SED_dips_dips + 3 * SED_dips_dips ** 2) * 1) /
+                (4 * self.a ** 7)
+            )
+        )
+        C_G = T.fill_diagonal(C_G, self.c_o)  # This sets the variance of the dips
+
+        # ============
+        # Cross-Covariance gradients-interfaces
+
+        C_GI = (
+            hu_rest / SED_dips_rest *
+            (SED_dips_rest < self.a) * (  # first derivative
+                -7 * (self.a - SED_dips_rest) ** 3 * SED_dips_rest *
+                (8 * self.a ** 2 + 9 * self.a * SED_dips_rest + 3 * SED_dips_rest ** 2) * 1) /
+            (4 * self.a ** 7) -
+            hu_ref / SED_dips_ref *
+            (SED_dips_ref < self.a) * (  # first derivative
+                -7 * (self.a - SED_dips_ref) ** 3 * SED_dips_ref *
+                (8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * 1) /
+            (4 * self.a ** 7)
+        ).T
+
+        # ==========================
+        # Condition of universality
+        # Gradients
+
+        n = dips_position.shape[0]
+        U_G = T.zeros((n * n_dimensions, n_dimensions))
+        # x
+        U_G = T.set_subtensor(
+            U_G[:n, 0], 1)
+        # y
+        U_G = T.set_subtensor(
+            U_G[n:n*2, 1], 1
+        )
+        # z
+        U_G = T.set_subtensor(
+            U_G[n*2:n * 3, 2], 1
+        )
+
+        # Interface
+        U_I = hx
+
+        # ===================
+        # Creation of the Covariance Matrix
+
+        C_matrix = T.zeros((length_of_C, length_of_C))
+
+        # First row of matrices
+        C_matrix = T.set_subtensor(C_matrix[0:length_of_CG, 0:length_of_CG], -C_G)
+
+        C_matrix = T.set_subtensor(
+            C_matrix[0:length_of_CG, length_of_CG:length_of_CG + length_of_CGI], C_GI.T)
+
+        C_matrix = T.set_subtensor(
+            C_matrix[0:length_of_CG, -length_of_U_I:], U_G)
+
+        # Second row of matrices
+        C_matrix = T.set_subtensor(
+            C_matrix[length_of_CG:length_of_CG + length_of_CGI, 0:length_of_CG], C_GI)
+        C_matrix = T.set_subtensor(
+            C_matrix[length_of_CG:length_of_CG + length_of_CGI, length_of_CG:length_of_CG + length_of_CGI], C_I)
+
+        C_matrix = T.set_subtensor(
+            C_matrix[length_of_CG:length_of_CG + length_of_CGI, -length_of_U_I:], U_I)
+
+        # Third row of matrices
+        C_matrix = T.set_subtensor(
+            C_matrix[-length_of_U_I:, 0:length_of_CG], U_G.T)
+        C_matrix = T.set_subtensor(
+            C_matrix[-length_of_U_I:, length_of_CG:length_of_CG + length_of_CGI], U_I.T)
+
+        # =====================
+        # Creation of the gradients G vector
+        # Calculation of the cartesian components of the dips assuming the unit module:
+
+       # arrow_point_positions_x = T.cos(T.deg2rad(dip_angles))
+       # arrow_point_positions_y = T.sin(T.deg2rad(dip_angles))
+       # arrow_point_position = T.concatenate((arrow_point_positions_x, arrow_point_positions_y))
+
+        G_x = T.sin(dip_angles) * T.sin(azimuth) * polarity
+        G_y = T.sin(dip_angles) * T.cos(azimuth) * polarity
+        G_z = T.cos(dip_angles) * polarity
+
+        G = T.concatenate((G_x, G_y, G_z))
+
+        # ================
+        # Creation of the kriging vector
+        b = T.zeros_like(C_matrix[:, 0])
+        b = T.set_subtensor(b[0:G.shape[0]], G)
+
+        # ===============
+        # Solving the kriging system
+
+        DK_parameters = T.dot(T.nlinalg.matrix_inverse(C_matrix), b)
+
+        # ==============
+        # Interpolator
+        # ==============
+        # Calculating euclidian distances between the point to simulate and the avalible data
+
+        SED_dips_SimPoint = T.sqrt(
+            (_aux_dips_pos ** 2).sum(1).reshape((_aux_dips_pos.shape[0], 1)) +
+            (grid_val ** 2).sum(1).reshape((1, grid_val.shape[0])) -
+            2 * _aux_dips_pos.dot(grid_val.T))
+
+        SED_rest_SimPoint = T.sqrt(
+            (rest_layer_points ** 2).sum(1).reshape((rest_layer_points.shape[0], 1)) +
+            (grid_val ** 2).sum(1).reshape((1, grid_val.shape[0])) -
+            2 * rest_layer_points.dot(grid_val.T))
+
+        SED_ref_SimPoint = T.sqrt(
+            (ref_layer_points ** 2).sum(1).reshape((ref_layer_points.shape[0], 1)) +
+            (grid_val ** 2).sum(1).reshape((1, grid_val.shape[0])) -
+            2 * ref_layer_points.dot(grid_val.T))
+
+        # Cartesian distances between the point to simulate and the dips
+
+        hu_SimPoint = T.vertical_stack(
+            (dips_position[:, 0] - grid_val[:, 0].reshape((grid_val[:, 0].shape[0], 1))).T,
+            (dips_position[:, 1] - grid_val[:, 1].reshape((grid_val[:, 1].shape[0], 1))).T,
+            (dips_position[:, 2] - grid_val[:, 2].reshape((grid_val[:, 2].shape[0], 1))).T
+        )
+
+        weigths = T.tile(DK_parameters, (grid_val.shape[0], 1)).T
+
+        sigma_0_grad = (
+            T.sum(
+            weigths[:length_of_CG, :] * hu_SimPoint / SED_dips_SimPoint * (
+                (SED_dips_SimPoint < self.a) * (           # first derivative
+                    -7 * (self.a - SED_dips_SimPoint) ** 3 * SED_dips_SimPoint *
+                    (8 * self.a ** 2 + 9 * self.a * SED_dips_SimPoint + 3 * SED_dips_SimPoint ** 2) * 1) /
+                (4 * self.a ** 7)
+            ), axis=0))
+
+        sigma_0_interf = (T.sum(
+            weigths[length_of_CG:length_of_CG + length_of_CGI, :] *  # Covariance cubic to rest
+            ((SED_rest_SimPoint < self.a) * (1 - 7 * (SED_rest_SimPoint / self.a) ** 2 +
+                                             35 / 4 * (SED_rest_SimPoint / self.a) ** 3 -
+                                             7 / 2 * (SED_rest_SimPoint / self.a) ** 5 +
+                                             3 / 4 * (SED_rest_SimPoint / self.a) ** 7) -  # Covariance cubic to ref
+             (SED_ref_SimPoint < self.a) * (1 - 7 * (SED_ref_SimPoint / self.a) ** 2 +
+                                            35 / 4 * (SED_ref_SimPoint / self.a) ** 3 -
+                                            7 / 2 * (SED_ref_SimPoint / self.a) ** 5 +
+                                            3 / 4 * (SED_ref_SimPoint / self.a) ** 7)
+             ), axis=0))
+
+        f_0 = grid_val.T
+        f_0 = (T.sum(
+            weigths[-length_of_U_I:, :] * grid_val.T, axis=0))
+
+        Z_x = sigma_0_grad + sigma_0_interf + f_0
+        """
+        """
+        self.geoMigueller = theano.function([dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points],
+        [ Z_x, C_I, C_G, C_GI, U_G, U_I, C_matrix, perpendicularity_matrix],
+                                               on_unused_input="warn", profile=True)
 
 
 
