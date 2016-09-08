@@ -635,7 +635,7 @@ class GeoMigSim_pro2:
         h_u = T.vertical_stack(
             T.tile(dips_position[:, 0] - dips_position[:, 0].reshape((dips_position[:, 0].shape[0], 1)), n_dimensions),  # x
             T.tile(dips_position[:, 1] - dips_position[:, 1].reshape((dips_position[:, 1].shape[0], 1)), n_dimensions),  # y
-            T.tile(dips_position[:, 2] - dips_position[:, 2].reshape((dips_position[:, 2].shape[0], 1)),n_dimensions))          #z
+            T.tile(dips_position[:, 2] - dips_position[:, 2].reshape((dips_position[:, 2].shape[0], 1)), n_dimensions))          #z
 
         h_v = h_u.T
 
@@ -711,9 +711,9 @@ class GeoMigSim_pro2:
 
         C_G = T.switch(
             T.eq(SED_dips_dips, 0),  # This is the condition
-            0,  # If true it is equal to 0. This is how a direction affect another
-            (  # else
-                # self.c_o*
+            0,                       # If true it is equal to 0. This is how a direction affect another
+            (                         # else
+             # self.c_o*
                 (-h_u * h_v / SED_dips_dips ** 2) *
                 ((1 / SED_dips_dips) *
                  (SED_dips_dips < self.a) * (  # first derivative
@@ -768,7 +768,7 @@ class GeoMigSim_pro2:
         )
         # z
         U_G = T.set_subtensor(
-            U_G[n*2:n * 3, 2], 1
+            U_G[n * 2: n * 3, 2], 1
         )
 
         # Interface
@@ -811,9 +811,9 @@ class GeoMigSim_pro2:
        # arrow_point_positions_y = T.sin(T.deg2rad(dip_angles))
        # arrow_point_position = T.concatenate((arrow_point_positions_x, arrow_point_positions_y))
 
-        G_x = T.sin(dip_angles) * T.sin(azimuth) * polarity
-        G_y = T.sin(dip_angles) * T.cos(azimuth) * polarity
-        G_z = T.cos(dip_angles) * polarity
+        G_x = T.sin(T.deg2rad(dip_angles)) * T.sin(T.deg2rad(azimuth)) * polarity
+        G_y = T.sin(T.deg2rad(dip_angles)) * T.cos(T.deg2rad(azimuth)) * polarity
+        G_z = T.cos(T.deg2rad(dip_angles)) * polarity
 
         G = T.concatenate((G_x, G_y, G_z))
 
@@ -882,7 +882,7 @@ class GeoMigSim_pro2:
         f_0 = (T.sum(
             weigths[-length_of_U_I:, :] * grid_val.T, axis=0))
 
-        Z_x = sigma_0_grad + sigma_0_interf + f_0
+        Z_x = (sigma_0_grad + sigma_0_interf + f_0)
         """
         """
         self.geoMigueller = theano.function([dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points],
