@@ -2,16 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="050fb100-0240-4a70-a41a-778e251719ea" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/starting_theano.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/GeMpy.iml" afterPath="$PROJECT_DIR$/.idea/GeMpy.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Sandstone Project-checkpoint.ipynb" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Sandstone Project-checkpoint.ipynb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/GeoMig.py" afterPath="$PROJECT_DIR$/GeoMig.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Geothealler big function 3D.ipynb" afterPath="$PROJECT_DIR$/Geothealler big function 3D.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Sandstone Project.ipynb" afterPath="$PROJECT_DIR$/Sandstone Project.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/theano step by step.ipynb" afterPath="$PROJECT_DIR$/theano step by step.ipynb" />
     </list>
     <ignored path="GeMpy.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -35,11 +29,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="GeoMig.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="GeoMig.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/GeoMig.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="208">
-              <caret line="1140" column="47" selection-start-line="1140" selection-start-column="47" selection-end-line="1140" selection-end-column="47" />
+            <state relative-caret-position="-8">
+              <caret line="1212" column="8" selection-start-line="1212" selection-start-column="8" selection-end-line="1212" selection-end-column="8" />
               <folding>
                 <element signature="e#305#3910#0" expanded="false" />
                 <element signature="e#4335#7680#0" expanded="false" />
@@ -48,11 +42,19 @@
                 <element signature="e#8304#8555#0" expanded="false" />
                 <element signature="e#8616#8862#0" expanded="false" />
                 <element signature="e#8948#9158#0" expanded="false" />
-                <element signature="e#9260#9533#0" expanded="false" />
-                <element signature="e#9573#22999#0" expanded="false" />
-                <element signature="e#23045#37909#0" expanded="false" />
-                <element signature="e#37957#41669#0" expanded="false" />
+                <element signature="e#9589#23015#0" expanded="false" />
+                <element signature="e#23061#37925#0" expanded="false" />
+                <element signature="e#37973#41685#0" expanded="false" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Geothealler big function 3D-Testing.ipynb" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb">
+          <provider selected="true" editor-type-id="ipnb-editor">
+            <state>
+              <selected id="0" />
             </state>
           </provider>
         </entry>
@@ -97,9 +99,9 @@
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="65" />
-    <option name="y" value="-4" />
+    <option name="y" value="24" />
     <option name="width" value="1855" />
-    <option name="height" value="1084" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -126,7 +128,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scratches" />
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -147,7 +149,7 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -403,6 +405,14 @@
       <option name="presentableId" value="Default" />
       <updated>1468934057428</updated>
     </task>
+    <task id="LOCAL-00001" summary="Finding out all the problems with float32 operations:&#10;- All the euclidean distances now are done in the CPU in float64&#10;- When the range is too low and I use the GPU there are some nan. I should correct this using switch&#10;&#10;Also I found a bug in the dips, they almost dont have any effect in the interpolation. I have to try to increase the rank of the universal part but I dont have too much faith&#10;">
+      <created>1473418269135</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1473418269135</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TodoView">
@@ -415,10 +425,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
+    <frame x="65" y="24" width="1855" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20840243" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.06301824" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32985386" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -449,9 +459,13 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Finding out all the problems with float32 operations:&#10;- All the euclidean distances now are done in the CPU in float64&#10;- When the range is too low and I use the GPU there are some nan. I should correct this using switch&#10;&#10;Also I found a bug in the dips, they almost dont have any effect in the interpolation. I have to try to increase the rank of the universal part but I dont have too much faith&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="Finding out all the problems with float32 operations:&#10;- All the euclidean distances now are done in the CPU in float64&#10;- When the range is too low and I use the GPU there are some nan. I should correct this using switch&#10;&#10;Also I found a bug in the dips, they almost dont have any effect in the interpolation. I have to try to increase the rank of the universal part but I dont have too much faith&#10;" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="2" />
+      <option name="time" value="3" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -468,10 +482,9 @@
             <element signature="e#8304#8555#0" expanded="false" />
             <element signature="e#8616#8862#0" expanded="false" />
             <element signature="e#8948#9158#0" expanded="false" />
-            <element signature="e#9260#9533#0" expanded="false" />
-            <element signature="e#9573#22999#0" expanded="false" />
-            <element signature="e#23045#37909#0" expanded="false" />
-            <element signature="e#37957#41669#0" expanded="false" />
+            <element signature="e#9589#23015#0" expanded="false" />
+            <element signature="e#23061#37925#0" expanded="false" />
+            <element signature="e#37973#41685#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -504,6 +517,25 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/starting theano.py" />
+    <entry file="file://$PROJECT_DIR$/GeoMig.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-8">
+          <caret line="1212" column="8" selection-start-line="1212" selection-start-column="8" selection-end-line="1212" selection-end-column="8" />
+          <folding>
+            <element signature="e#305#3910#0" expanded="false" />
+            <element signature="e#4335#7680#0" expanded="false" />
+            <element signature="e#7718#7812#0" expanded="false" />
+            <element signature="e#7866#8254#0" expanded="false" />
+            <element signature="e#8304#8555#0" expanded="false" />
+            <element signature="e#8616#8862#0" expanded="false" />
+            <element signature="e#8948#9158#0" expanded="false" />
+            <element signature="e#9589#23015#0" expanded="false" />
+            <element signature="e#23061#37925#0" expanded="false" />
+            <element signature="e#37973#41685#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/starting_theano.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="234">
@@ -514,23 +546,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/GeoMig.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="208">
-          <caret line="1140" column="47" selection-start-line="1140" selection-start-column="47" selection-end-line="1140" selection-end-column="47" />
-          <folding>
-            <element signature="e#305#3910#0" expanded="false" />
-            <element signature="e#4335#7680#0" expanded="false" />
-            <element signature="e#7718#7812#0" expanded="false" />
-            <element signature="e#7866#8254#0" expanded="false" />
-            <element signature="e#8304#8555#0" expanded="false" />
-            <element signature="e#8616#8862#0" expanded="false" />
-            <element signature="e#8948#9158#0" expanded="false" />
-            <element signature="e#9260#9533#0" expanded="false" />
-            <element signature="e#9573#22999#0" expanded="false" />
-            <element signature="e#23045#37909#0" expanded="false" />
-            <element signature="e#37957#41669#0" expanded="false" />
-          </folding>
+    <entry file="file://$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="-1" />
         </state>
       </provider>
     </entry>

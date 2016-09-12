@@ -247,8 +247,9 @@ class GeoMigSim_pro2:
         g = np.meshgrid(
             np.linspace(x_min, x_max, nx, dtype="float32"),
             np.linspace(y_min, y_max, ny, dtype="float32"),
-            np.linspace(z_min, z_max, nz, dtype="float32")
+            np.linspace(z_min, z_max, nz, dtype="float32"), indexing="ij"
         )
+
         self.grid = np.vstack(map(np.ravel, g)).T.astype("float32")
 
     def theano_set_2D(self):
@@ -1190,7 +1191,7 @@ class GeoMigSim_pro2:
         ).T
 
         # ==========================
-        # Condition of universality
+        # Condition of universality 1 degree
         # Gradients
 
         n = dips_position.shape[0]
@@ -1209,6 +1210,46 @@ class GeoMigSim_pro2:
 
         # Interface
         U_I = hx
+        """
+
+        # ==========================
+        # Condition of universality 2 degree
+        # Gradients
+
+        n = dips_position.shape[0]
+        U_G = T.zeros((n * n_dimensions, 3 * n_dimensions))
+        # x
+        U_G = T.set_subtensor(
+            U_G[:n, 0], 1)
+        # y
+        U_G = T.set_subtensor(
+            U_G[n * 1:n * 2, 1], 1
+        )
+        # z
+        U_G = T.set_subtensor(
+            U_G[n * 2: n * 3, 2], 1
+        )
+        # x**2
+        U_G = T.set_subtensor(
+            U_G[n * 3: n * 4, 0], 2*dips_position[:,0]
+        )
+        # y**2
+        U_G = T.set_subtensor(
+            U_G[n * 4: n * 5, 1], 2*dips_position[:, 1]
+        )
+        # z**2
+        U_G = T.set_subtensor(
+            U_G[n * 5: n * 6, 2], 2 * dips_position[:, 2]
+        )
+        # xy
+        U_G = T.set_subtensor(
+            U_G[n * 6: n * 7, 2], 2 * dips_position[:, 2]
+        )
+        """
+        # Interface
+        U_I = hx
+
+
 
         # ===================
         # Creation of the Covariance Matrix
@@ -1250,6 +1291,10 @@ class GeoMigSim_pro2:
         G_x = T.sin(T.deg2rad(dip_angles)) * T.sin(T.deg2rad(azimuth)) * polarity
         G_y = T.sin(T.deg2rad(dip_angles)) * T.cos(T.deg2rad(azimuth)) * polarity
         G_z = T.cos(T.deg2rad(dip_angles)) * polarity
+
+        self.G_x = G_x
+        self.G_y = G_y
+        self.G_z = G_z
 
         G = T.concatenate((G_x, G_y, G_z))
 
@@ -1337,7 +1382,7 @@ class GeoMigSim_pro2:
             [Z_x, C_I, C_G, C_GI, U_G, U_I, C_matrix, perpendicularity_matrix,SED_dips_dips,
              SED_dips_dips.shape, dips_position.shape[1], DK_parameters, T.nlinalg.matrix_inverse(C_matrix), self.a,
              hu_rest, SED_dips_rest, hu_ref, SED_dips_ref,
-             i,z,u],
+             G_x, G_y, G_z],
             on_unused_input="warn", profile=True)
 
 
