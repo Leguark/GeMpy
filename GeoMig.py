@@ -251,6 +251,12 @@ class GeoMigSim_pro2:
         )
 
         self.grid = np.vstack(map(np.ravel, g)).T.astype("float32")
+        self._universal_matrix = np.vstack((
+            self.grid.T,
+            (self.grid ** 2).T,
+            self.grid[:, 0] * self.grid[:, 1],
+            self.grid[:, 0] * self.grid[:, 2],
+            self.grid[:, 1] * self.grid[:, 2]))
 
     def theano_set_2D(self):
 
@@ -973,6 +979,7 @@ class GeoMigSim_pro2:
         ref_layer_points = T.matrix("Reference points for every layer")
         rest_layer_points = T.matrix("Rest of the points of the layers")
         grid_val = theano.shared(self.grid, "Positions of the points to interpolate")
+        universal_matrix = theano.shared(self._universal_matrix, "universal matrix")
        # euclidean_distances = theano.shared(self.euclidean_distances, "list with all euclidean distances needed")
         """
         SED_dips_dips = euclidean_distances[0]
@@ -990,7 +997,7 @@ class GeoMigSim_pro2:
         # Init values
 
         n_dimensions = 3
-        grade_universal = 3
+        grade_universal = 9
 
         length_of_CG = dips_position.shape[0] * n_dimensions
         length_of_CGI = rest_layer_points.shape[0]
@@ -1091,13 +1098,7 @@ class GeoMigSim_pro2:
             (dips_position[:, 2] - ref_layer_points[:, 2].reshape((ref_layer_points[:, 2].shape[0], 1))).T
         )
 
-        # Cartesian distances between reference points and rest
 
-        hx = T.stack(
-            (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
-            (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
-            (rest_layer_points[:, 2] - ref_layer_points[:, 2])
-        ).T
 
         # Perpendicularity matrix
 
@@ -1189,7 +1190,7 @@ class GeoMigSim_pro2:
                 (8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * 1) /
             (4 * self.a ** 7)
         ).T
-
+        """
         # ==========================
         # Condition of universality 1 degree
         # Gradients
@@ -1209,6 +1210,14 @@ class GeoMigSim_pro2:
         )
 
         # Interface
+               # Cartesian distances between reference points and rest
+
+        hx = T.stack(
+            (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
+            (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
+            (rest_layer_points[:, 2] - ref_layer_points[:, 2])
+        ).T
+
         U_I = hx
         """
 
@@ -1231,23 +1240,61 @@ class GeoMigSim_pro2:
         )
         # x**2
         U_G = T.set_subtensor(
-            U_G[n * 3: n * 4, 0], 2*dips_position[:,0]
+            U_G[:n, 3], 2 * dips_position[:,0]
         )
         # y**2
         U_G = T.set_subtensor(
-            U_G[n * 4: n * 5, 1], 2*dips_position[:, 1]
+            U_G[n * 1:n * 2, 4], 2 * dips_position[:, 1]
         )
         # z**2
         U_G = T.set_subtensor(
-            U_G[n * 5: n * 6, 2], 2 * dips_position[:, 2]
+            U_G[n * 2: n * 3, 5], 2 * dips_position[:, 2]
         )
         # xy
         U_G = T.set_subtensor(
-            U_G[n * 6: n * 7, 2], 2 * dips_position[:, 2]
+            U_G[:n, 6], dips_position[:, 1] # This is y
         )
-        """
+
+        U_G = T.set_subtensor(
+            U_G[n * 1:n * 2, 6], dips_position[:, 0]  # This is x
+        )
+
+        # xz
+        U_G = T.set_subtensor(
+            U_G[:n, 7], dips_position[:, 2]  # This is z
+        )
+        U_G = T.set_subtensor(
+            U_G[n * 2: n * 3, 7], dips_position[:, 0]  # This is x
+        )
+
+        # yz
+
+        U_G = T.set_subtensor(
+            U_G[n * 1:n * 2, 8], dips_position[:, 2]  # This is z
+        )
+
+
+        U_G = T.set_subtensor(
+            U_G[n * 2:n * 3, 8], dips_position[:, 1]  # This is y
+        )
+
         # Interface
-        U_I = hx
+
+        # Cartesian distances between reference points and rest
+
+        U_I = T.stack(
+            (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
+            (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
+            (rest_layer_points[:, 2] - ref_layer_points[:, 2]),
+            (rest_layer_points[:, 0]**2 - ref_layer_points[:, 0]**2),
+            (rest_layer_points[:, 1]**2 - ref_layer_points[:, 1]**2),
+            (rest_layer_points[:, 2]**2 - ref_layer_points[:, 2]**2),
+            (rest_layer_points[:, 0]*rest_layer_points[:, 1] - ref_layer_points[:, 0]*ref_layer_points[:, 1]),
+            (rest_layer_points[:, 0]*rest_layer_points[:, 2] - ref_layer_points[:, 0]*ref_layer_points[:, 2]),
+            (rest_layer_points[:, 1]*rest_layer_points[:, 2] - ref_layer_points[:, 1]*ref_layer_points[:, 2]),
+        ).T
+
+        #U_I = hx
 
 
 
@@ -1344,13 +1391,14 @@ class GeoMigSim_pro2:
                                             3 / 4 * (SED_ref_SimPoint / self.a) ** 7)
              ), axis=0))
 
-        f_0 = grid_val.T
+
+
         f_0 = (T.sum(
-            weigths[-length_of_U_I:, :] * grid_val.T, axis=0))
+            weigths[-length_of_U_I:, :] * universal_matrix, axis=0))
 
         Z_x = (sigma_0_grad + sigma_0_interf + f_0)
-        """
-        """
+
+
         C_GI = (
             hu_rest / SED_dips_rest *
             (SED_dips_rest < self.a) * (  # first derivative
@@ -1375,14 +1423,15 @@ class GeoMigSim_pro2:
         u = ((SED_dips_ref < self.a)+0.0000001) * ((  # first derivative
                 -7 * (self.a - SED_dips_ref) ** 3 * SED_dips_ref *
                 (8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * 1) /(4 * self.a ** 7))
-
+        """
+        """
 
         self.geoMigueller = theano.function(
             [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points],
-            [Z_x, C_I, C_G, C_GI, U_G, U_I, C_matrix, perpendicularity_matrix,SED_dips_dips,
-             SED_dips_dips.shape, dips_position.shape[1], DK_parameters, T.nlinalg.matrix_inverse(C_matrix), self.a,
+            [f_0, weigths[-length_of_U_I:, :]  ,  C_I, C_G, C_GI, U_G, U_I, C_matrix, perpendicularity_matrix,SED_dips_dips,
+             SED_dips_dips.shape, dips_position.shape[1], T.nlinalg.matrix_inverse(C_matrix), self.a,
              hu_rest, SED_dips_rest, hu_ref, SED_dips_ref,
-             G_x, G_y, G_z],
+            G_x, G_y, G_z],
             on_unused_input="warn", profile=True)
 
 
