@@ -1642,8 +1642,7 @@ class GeoMigSim_pro2:
                 (4 * self.a ** 7)
             )
         )
-        #C_G = T.fill_diagonal(C_G, self.c_o)  # This sets the variance of the dips
-        C_G = C_G + self.c_o
+        C_G = T.fill_diagonal(C_G, self.c_o)  # This sets the variance of the dips
         # ============
         # Cross-Covariance gradients-interfaces
 
@@ -1838,6 +1837,7 @@ class GeoMigSim_pro2:
 
         weigths = T.tile(DK_parameters, (grid_val.shape[0], 1)).T
 
+        #TODO multiply weights as a dot operation and not tiling it!
         sigma_0_grad = (
             T.sum(
                 weigths[:length_of_CG, :] * hu_SimPoint / SED_dips_SimPoint * (
@@ -1864,38 +1864,12 @@ class GeoMigSim_pro2:
 
         Z_x = (sigma_0_grad + sigma_0_interf + f_0)
 
-        C_GI = (
-            hu_rest / SED_dips_rest *
-            (SED_dips_rest < self.a) * (  # first derivative
-                -7 * (self.a - SED_dips_rest) ** 3 * SED_dips_rest *
-                (8 * self.a ** 2 + 9 * self.a * SED_dips_rest + 3 * SED_dips_rest ** 2) * 1) /
-            (4 * self.a ** 7) -
-            hu_ref / SED_dips_ref *
-            (SED_dips_ref < self.a) * (  # first derivative
-                -7 * (self.a - SED_dips_ref) ** 3 * SED_dips_ref *
-                (8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * 1) /
-            (4 * self.a ** 7)
-        ).T
-
-        p = (SED_dips_rest < self.a)
-        o = (SED_dips_rest < self.a) * (  # first derivative
-            -7 * (self.a - SED_dips_rest) ** 3 * SED_dips_rest *
-            (8 * self.a ** 2 + 9 * self.a * SED_dips_rest + 3 * SED_dips_rest ** 2) * 1) / (4 * self.a ** 7)
-        i = (SED_dips_ref < self.a) + 0.0000001
-        z = ((  # first derivative
-                 -7 * (self.a - SED_dips_ref) ** 3 * SED_dips_ref *
-                 (8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * 1) / (4 * self.a ** 7))
-        u = ((SED_dips_ref < self.a) + 0.0000001) * ((  # first derivative
-                                                         -7 * (self.a - SED_dips_ref) ** 3 * SED_dips_ref *
-                                                         (
-                                                         8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * 1) / (
-                                                     4 * self.a ** 7))
         """
         """
 
         self.geoMigueller = theano.function(
             [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points],
-            [f_0, weigths[-length_of_U_I:, :], C_I, C_G, C_GI, U_G, U_I, C_matrix, perpendicularity_matrix, SED_dips_dips,
+            [Z_x, DK_parameters, f_0, weigths[-length_of_U_I:, :], C_I, C_G, C_GI, U_G, U_I, C_matrix, perpendicularity_matrix, SED_dips_dips,
              SED_dips_dips.shape, dips_position.shape[1], T.nlinalg.matrix_inverse(C_matrix), self.a,
              hu_rest, SED_dips_rest, hu_ref, SED_dips_ref,
              G_x, G_y, G_z],

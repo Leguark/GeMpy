@@ -2,10 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="050fb100-0240-4a70-a41a-778e251719ea" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/starting theano.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.ipynb_checkpoints/Sandstone Project-checkpoint.ipynb" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Sandstone Project-checkpoint.ipynb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/GeoMig.py" afterPath="$PROJECT_DIR$/GeoMig.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb" afterPath="$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Sandstone Project.ipynb" afterPath="$PROJECT_DIR$/Sandstone Project.ipynb" />
     </list>
     <ignored path="GeMpy.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -29,11 +30,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="GeoMig.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="GeoMig.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/GeoMig.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-8">
-              <caret line="1212" column="8" selection-start-line="1212" selection-start-column="8" selection-end-line="1212" selection-end-column="8" />
+            <state relative-caret-position="402">
+              <caret line="1645" column="22" selection-start-line="1645" selection-start-column="22" selection-end-line="1645" selection-end-column="22" />
               <folding>
                 <element signature="e#305#3910#0" expanded="false" />
                 <element signature="e#4335#7680#0" expanded="false" />
@@ -42,19 +43,11 @@
                 <element signature="e#8304#8555#0" expanded="false" />
                 <element signature="e#8616#8862#0" expanded="false" />
                 <element signature="e#8948#9158#0" expanded="false" />
-                <element signature="e#9589#23015#0" expanded="false" />
-                <element signature="e#23061#37925#0" expanded="false" />
-                <element signature="e#37973#41685#0" expanded="false" />
+                <element signature="e#9833#23259#0" expanded="false" />
+                <element signature="e#23305#38169#0" expanded="false" />
+                <element signature="e#38217#41929#0" expanded="false" />
+                <element signature="e#41968#62249#0" expanded="false" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Geothealler big function 3D-Testing.ipynb" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb">
-          <provider selected="true" editor-type-id="ipnb-editor">
-            <state>
-              <selected id="0" />
             </state>
           </provider>
         </entry>
@@ -81,12 +74,14 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="UPDATE_TYPE" value="MERGE" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/starting theano.py" />
+        <option value="$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb" />
         <option value="$PROJECT_DIR$/GeoMig.py" />
       </list>
     </option>
@@ -128,7 +123,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -150,6 +144,7 @@
         </subPane>
       </pane>
       <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -397,6 +392,9 @@
   <component name="ShelveChangesManager" show_recycled="false">
     <option name="remove_strategy" value="false" />
   </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="050fb100-0240-4a70-a41a-778e251719ea" name="Default" comment="" />
@@ -412,7 +410,14 @@
       <option name="project" value="LOCAL" />
       <updated>1473418269135</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="added a matplotlib visualization of the potential field&#10;started the degree 2 of universal kriging&#10;">
+      <created>1473708013635</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1473708013635</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TodoView">
@@ -428,11 +433,11 @@
     <frame x="65" y="24" width="1855" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.06301824" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19237147" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32985386" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32881" sideWeight="0.50193477" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32881" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32881" sideWeight="0.49806523" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2498618" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
@@ -461,7 +466,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Finding out all the problems with float32 operations:&#10;- All the euclidean distances now are done in the CPU in float64&#10;- When the range is too low and I use the GPU there are some nan. I should correct this using switch&#10;&#10;Also I found a bug in the dips, they almost dont have any effect in the interpolation. I have to try to increase the rank of the universal part but I dont have too much faith&#10;" />
-    <option name="LAST_COMMIT_MESSAGE" value="Finding out all the problems with float32 operations:&#10;- All the euclidean distances now are done in the CPU in float64&#10;- When the range is too low and I use the GPU there are some nan. I should correct this using switch&#10;&#10;Also I found a bug in the dips, they almost dont have any effect in the interpolation. I have to try to increase the rank of the universal part but I dont have too much faith&#10;" />
+    <MESSAGE value="added a matplotlib visualization of the potential field&#10;started the degree 2 of universal kriging&#10;" />
+    <option name="LAST_COMMIT_MESSAGE" value="added a matplotlib visualization of the potential field&#10;started the degree 2 of universal kriging&#10;" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -470,6 +476,26 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/GeoMig.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#305#3910#0" expanded="false" />
+            <element signature="e#4335#7680#0" expanded="false" />
+            <element signature="e#7718#7812#0" expanded="false" />
+            <element signature="e#7866#8254#0" expanded="false" />
+            <element signature="e#8304#8555#0" expanded="false" />
+            <element signature="e#8616#8862#0" expanded="false" />
+            <element signature="e#8948#9158#0" expanded="false" />
+            <element signature="e#9833#23259#0" expanded="false" />
+            <element signature="e#23305#38169#0" expanded="false" />
+            <element signature="e#38217#41929#0" expanded="false" />
+            <element signature="e#41968#62249#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/GeoMig.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="10476">
@@ -482,9 +508,10 @@
             <element signature="e#8304#8555#0" expanded="false" />
             <element signature="e#8616#8862#0" expanded="false" />
             <element signature="e#8948#9158#0" expanded="false" />
-            <element signature="e#9589#23015#0" expanded="false" />
-            <element signature="e#23061#37925#0" expanded="false" />
-            <element signature="e#37973#41685#0" expanded="false" />
+            <element signature="e#9833#23259#0" expanded="false" />
+            <element signature="e#23305#38169#0" expanded="false" />
+            <element signature="e#38217#41929#0" expanded="false" />
+            <element signature="e#41968#62249#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -517,10 +544,17 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/starting theano.py" />
+    <entry file="file://$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb">
+      <provider selected="true" editor-type-id="ipnb-editor">
+        <state>
+          <selected id="0" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/GeoMig.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-8">
-          <caret line="1212" column="8" selection-start-line="1212" selection-start-column="8" selection-end-line="1212" selection-end-column="8" />
+        <state relative-caret-position="402">
+          <caret line="1645" column="22" selection-start-line="1645" selection-start-column="22" selection-end-line="1645" selection-end-column="22" />
           <folding>
             <element signature="e#305#3910#0" expanded="false" />
             <element signature="e#4335#7680#0" expanded="false" />
@@ -529,9 +563,10 @@
             <element signature="e#8304#8555#0" expanded="false" />
             <element signature="e#8616#8862#0" expanded="false" />
             <element signature="e#8948#9158#0" expanded="false" />
-            <element signature="e#9589#23015#0" expanded="false" />
-            <element signature="e#23061#37925#0" expanded="false" />
-            <element signature="e#37973#41685#0" expanded="false" />
+            <element signature="e#9833#23259#0" expanded="false" />
+            <element signature="e#23305#38169#0" expanded="false" />
+            <element signature="e#38217#41929#0" expanded="false" />
+            <element signature="e#41968#62249#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -543,13 +578,6 @@
           <folding>
             <element signature="e#0#52#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb">
-      <provider selected="true" editor-type-id="ipnb-editor">
-        <state>
-          <selected id="-1" />
         </state>
       </provider>
     </entry>
