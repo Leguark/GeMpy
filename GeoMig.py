@@ -111,7 +111,7 @@ class GeoMigSim_pro2:
         """general thigs"""
         theano.config.optimizer = "fast_run"
         theano.config.exception_verbosity = 'low'
-        theano.config.compute_test_value = 'off'
+        theano.config.compute_test_value = 'ignore'
 
 
         self.a = theano.shared(range, "range")
@@ -1449,6 +1449,12 @@ class GeoMigSim_pro2:
         rest_layer_points = T.matrix("Rest of the points of the layers")
         grid_val = theano.shared(self.grid, "Positions of the points to interpolate")
         universal_matrix = theano.shared(self._universal_matrix, "universal matrix")
+        a = T.scalar()
+        g = T.scalar()
+        c = T.scalar()
+        d = T.scalar()
+        e = T.scalar()
+        f = T.scalar()
         # euclidean_distances = theano.shared(self.euclidean_distances, "list with all euclidean distances needed")
 
         #TODO: change all shared variables to self. in order to be able to change its value as well as check it. Othewise it will be always necesary to compile what makes no sense
@@ -1484,7 +1490,9 @@ class GeoMigSim_pro2:
         _aux_rest_layer_points = rest_layer_points.astype("float64")
         _aux_ref_layer_points = ref_layer_points.astype("float64")
         _aux_grid_val = grid_val.astype("float64")
+
         # Calculation of euclidian distances between the different elements
+
 
         SED_rest_rest = (T.sqrt(
             (_aux_rest_layer_points ** 2).sum(1).reshape((_aux_rest_layer_points.shape[0], 1)) +
@@ -1542,6 +1550,9 @@ class GeoMigSim_pro2:
         #     ref_layer_points = ref_layer_points.astype("float32")
         #  rest_layer_points = rest_layer_points.astype("float32")
 
+        # =========
+        # Cartesian distances
+
         # Cartesian distances between dips positions
 
         h_u = T.vertical_stack(
@@ -1589,7 +1600,7 @@ class GeoMigSim_pro2:
         # ==================
         # Covariance matrix for interfaces
 
-        C_I = (
+        C_I = a * (
             (SED_rest_rest < self.a) * (1 - 7 * (SED_rest_rest / self.a) ** 2 +
                                         35 / 4 * (SED_rest_rest / self.a) ** 3 -
                                         7 / 2 * (SED_rest_rest / self.a) ** 5 +
@@ -1608,11 +1619,7 @@ class GeoMigSim_pro2:
                                       3 / 4 * (SED_ref_ref / self.a) ** 7)
         )
 
-        printme = (perpendicularity_matrix *
-                   (SED_dips_dips < self.a) * (  # first derivative
-                       -7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *
-                       (8 * self.a ** 2 + 9 * self.a * SED_dips_dips + 3 * SED_dips_dips ** 2) * 1) /
-                   (4 * self.a ** 7))
+
         # =============
         # Covariance matrix for gradients at every xyz direction
 
@@ -1642,11 +1649,12 @@ class GeoMigSim_pro2:
                 (4 * self.a ** 7)
             )
         )
-        C_G = T.fill_diagonal(C_G, self.c_o)  # This sets the variance of the dips
+
+        C_G = g * T.fill_diagonal(C_G, c)  # This sets the variance of the dips
         # ============
         # Cross-Covariance gradients-interfaces
 
-        C_GI = (
+        C_GI = d * (
             hu_rest / SED_dips_rest *
             (SED_dips_rest < self.a) * (  # first derivative
                 -7 * (self.a - SED_dips_rest) ** 3 * SED_dips_rest *
@@ -1658,36 +1666,7 @@ class GeoMigSim_pro2:
                 (8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * 1) /
             (4 * self.a ** 7)
         ).T
-        """
-        # ==========================
-        # Condition of universality 1 degree
-        # Gradients
 
-        n = dips_position.shape[0]
-        U_G = T.zeros((n * n_dimensions, n_dimensions))
-        # x
-        U_G = T.set_subtensor(
-            U_G[:n, 0], 1)
-        # y
-        U_G = T.set_subtensor(
-            U_G[n:n * 2, 1], 1
-        )
-        # z
-        U_G = T.set_subtensor(
-            U_G[n * 2: n * 3, 2], 1
-        )
-
-        # Interface
-               # Cartesian distances between reference points and rest
-
-        hx = T.stack(
-            (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
-            (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
-            (rest_layer_points[:, 2] - ref_layer_points[:, 2])
-        ).T
-
-        U_I = hx
-        """
 
         # ==========================
         # Condition of universality 2 degree
@@ -1760,9 +1739,6 @@ class GeoMigSim_pro2:
             (rest_layer_points[:, 0] * rest_layer_points[:, 2] - ref_layer_points[:, 0] * ref_layer_points[:, 2]),
             (rest_layer_points[:, 1] * rest_layer_points[:, 2] - ref_layer_points[:, 1] * ref_layer_points[:, 2]),
         ).T
-
-        # U_I = hx
-
 
 
         # ===================
@@ -1840,7 +1816,7 @@ class GeoMigSim_pro2:
         #TODO multiply weights as a dot operation and not tiling it!
         sigma_0_grad = (
             T.sum(
-                weigths[:length_of_CG, :] * hu_SimPoint / SED_dips_SimPoint * (
+                weigths[:length_of_CG, :] * e * hu_SimPoint / SED_dips_SimPoint * (
                     (SED_dips_SimPoint < self.a) * (  # first derivative
                         -7 * (self.a - SED_dips_SimPoint) ** 3 * SED_dips_SimPoint *
                         (8 * self.a ** 2 + 9 * self.a * SED_dips_SimPoint + 3 * SED_dips_SimPoint ** 2) * 1) /
@@ -1848,7 +1824,7 @@ class GeoMigSim_pro2:
                 ), axis=0))
 
         sigma_0_interf = (T.sum(
-            weigths[length_of_CG:length_of_CG + length_of_CGI, :] *  # Covariance cubic to rest
+            weigths[length_of_CG:length_of_CG + length_of_CGI, :] * f *  # Covariance cubic to rest
             ((SED_rest_SimPoint < self.a) * (1 - 7 * (SED_rest_SimPoint / self.a) ** 2 +
                                              35 / 4 * (SED_rest_SimPoint / self.a) ** 3 -
                                              7 / 2 * (SED_rest_SimPoint / self.a) ** 5 +
@@ -1868,12 +1844,10 @@ class GeoMigSim_pro2:
         """
 
         self.geoMigueller = theano.function(
-            [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points],
-            [Z_x, DK_parameters, f_0, weigths[-length_of_U_I:, :], C_I, C_G, C_GI, U_G, U_I, C_matrix, perpendicularity_matrix, SED_dips_dips,
-             SED_dips_dips.shape, dips_position.shape[1], T.nlinalg.matrix_inverse(C_matrix), self.a,
-             hu_rest, SED_dips_rest, hu_ref, SED_dips_ref,
+            [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points, a, g, c, d, e, f],
+            [Z_x, DK_parameters, b,
              G_x, G_y, G_z],
-            on_unused_input="warn", profile=True)
+            on_unused_input="warn", profile=True, allow_input_downcast=True)
 
 
 

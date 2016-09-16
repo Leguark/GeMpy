@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="050fb100-0240-4a70-a41a-778e251719ea" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/starting theano.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/GeoMig.py" afterPath="$PROJECT_DIR$/GeoMig.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb" afterPath="$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Sandstone Project.ipynb" afterPath="$PROJECT_DIR$/Sandstone Project.ipynb" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../pygeomod/notebooks_GeoPyMC/PyMC for Geology Tutorial/PyMC geomod_1.ipynb" afterPath="$PROJECT_DIR$/../pygeomod/notebooks_GeoPyMC/PyMC for Geology Tutorial/PyMC geomod_1.ipynb" />
     </list>
     <ignored path="GeMpy.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -33,20 +33,24 @@
       <file leaf-file-name="GeoMig.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/GeoMig.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="402">
-              <caret line="1645" column="22" selection-start-line="1645" selection-start-column="22" selection-end-line="1645" selection-end-column="22" />
+            <state relative-caret-position="18">
+              <caret line="1741" column="0" selection-start-line="1741" selection-start-column="0" selection-end-line="1741" selection-end-column="0" />
               <folding>
                 <element signature="e#305#3910#0" expanded="false" />
-                <element signature="e#4335#7680#0" expanded="false" />
-                <element signature="e#7718#7812#0" expanded="false" />
-                <element signature="e#7866#8254#0" expanded="false" />
-                <element signature="e#8304#8555#0" expanded="false" />
-                <element signature="e#8616#8862#0" expanded="false" />
-                <element signature="e#8948#9158#0" expanded="false" />
-                <element signature="e#9833#23259#0" expanded="false" />
-                <element signature="e#23305#38169#0" expanded="false" />
-                <element signature="e#38217#41929#0" expanded="false" />
-                <element signature="e#41968#62249#0" expanded="false" />
+                <element signature="e#4338#7683#0" expanded="false" />
+                <element signature="e#7721#7815#0" expanded="false" />
+                <element signature="e#7869#8257#0" expanded="false" />
+                <element signature="e#8307#8558#0" expanded="false" />
+                <element signature="e#8619#8865#0" expanded="false" />
+                <element signature="e#8951#9161#0" expanded="false" />
+                <element signature="e#9836#23262#0" expanded="false" />
+                <element signature="e#23308#38172#0" expanded="false" />
+                <element signature="e#38220#41932#0" expanded="false" />
+                <element signature="e#41971#62252#0" expanded="false" />
+                <element signature="e#68291#68346#0" expanded="false" />
+                <marker date="1473953316680" expanded="false" signature="64507:67544" ph="..." />
+                <marker date="1473953316680" expanded="false" signature="67813:68281" ph="..." />
+                <marker date="1473953316680" expanded="false" signature="68367:69830" ph="..." />
               </folding>
             </state>
           </provider>
@@ -94,9 +98,9 @@
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="65" />
-    <option name="y" value="24" />
+    <option name="y" value="-4" />
     <option name="width" value="1855" />
-    <option name="height" value="1056" />
+    <option name="height" value="1084" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -143,8 +147,8 @@
           </PATH>
         </subPane>
       </pane>
-      <pane id="Scratches" />
       <pane id="Scope" />
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -417,7 +421,14 @@
       <option name="project" value="LOCAL" />
       <updated>1473708013635</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="testing vs geomodeller">
+      <created>1473884486462</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1473884486462</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TodoView">
@@ -430,10 +441,10 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="24" width="1855" height="1056" extended-state="6" />
-    <editor active="true" />
+    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
+    <editor active="false" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19237147" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.19679381" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32985386" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32881" sideWeight="0.50193477" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -467,11 +478,19 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Finding out all the problems with float32 operations:&#10;- All the euclidean distances now are done in the CPU in float64&#10;- When the range is too low and I use the GPU there are some nan. I should correct this using switch&#10;&#10;Also I found a bug in the dips, they almost dont have any effect in the interpolation. I have to try to increase the rank of the universal part but I dont have too much faith&#10;" />
     <MESSAGE value="added a matplotlib visualization of the potential field&#10;started the degree 2 of universal kriging&#10;" />
-    <option name="LAST_COMMIT_MESSAGE" value="added a matplotlib visualization of the potential field&#10;started the degree 2 of universal kriging&#10;" />
+    <MESSAGE value="testing vs geomodeller" />
+    <option name="LAST_COMMIT_MESSAGE" value="testing vs geomodeller" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="3" />
+      <breakpoints>
+        <line-breakpoint enabled="true" type="python-line">
+          <url>file://$PROJECT_DIR$/GeoMig.py</url>
+          <line>1496</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+      </breakpoints>
+      <option name="time" value="6" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -482,16 +501,54 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#305#3910#0" expanded="false" />
-            <element signature="e#4335#7680#0" expanded="false" />
-            <element signature="e#7718#7812#0" expanded="false" />
-            <element signature="e#7866#8254#0" expanded="false" />
-            <element signature="e#8304#8555#0" expanded="false" />
-            <element signature="e#8616#8862#0" expanded="false" />
-            <element signature="e#8948#9158#0" expanded="false" />
-            <element signature="e#9833#23259#0" expanded="false" />
-            <element signature="e#23305#38169#0" expanded="false" />
-            <element signature="e#38217#41929#0" expanded="false" />
-            <element signature="e#41968#62249#0" expanded="false" />
+            <element signature="e#4338#7683#0" expanded="false" />
+            <element signature="e#7721#7815#0" expanded="false" />
+            <element signature="e#7869#8257#0" expanded="false" />
+            <element signature="e#8307#8558#0" expanded="false" />
+            <element signature="e#8619#8865#0" expanded="false" />
+            <element signature="e#8951#9161#0" expanded="false" />
+            <element signature="e#9836#23262#0" expanded="false" />
+            <element signature="e#23308#38172#0" expanded="false" />
+            <element signature="e#38220#41932#0" expanded="false" />
+            <element signature="e#41971#62252#0" expanded="false" />
+            <element signature="e#68291#68346#0" expanded="false" />
+            <marker date="1473953316680" expanded="false" signature="64507:67544" ph="..." />
+            <marker date="1473953316680" expanded="false" signature="67813:68281" ph="..." />
+            <marker date="1473953316680" expanded="false" signature="68367:69830" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/starting_theano.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="288">
+          <caret line="16" column="20" selection-start-line="16" selection-start-column="20" selection-end-line="16" selection-end-column="20" />
+          <folding>
+            <element signature="e#0#52#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GeoMig.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#305#3910#0" expanded="false" />
+            <element signature="e#4338#7683#0" expanded="false" />
+            <element signature="e#7721#7815#0" expanded="false" />
+            <element signature="e#7869#8257#0" expanded="false" />
+            <element signature="e#8307#8558#0" expanded="false" />
+            <element signature="e#8619#8865#0" expanded="false" />
+            <element signature="e#8951#9161#0" expanded="false" />
+            <element signature="e#9836#23262#0" expanded="false" />
+            <element signature="e#23308#38172#0" expanded="false" />
+            <element signature="e#38220#41932#0" expanded="false" />
+            <element signature="e#41971#62252#0" expanded="false" />
+            <element signature="e#68291#68346#0" expanded="false" />
+            <marker date="1473953316680" expanded="false" signature="64507:67544" ph="..." />
+            <marker date="1473953316680" expanded="false" signature="67813:68281" ph="..." />
+            <marker date="1473953316680" expanded="false" signature="68367:69830" ph="..." />
           </folding>
         </state>
       </provider>
@@ -502,16 +559,20 @@
           <caret line="582" column="3" selection-start-line="582" selection-start-column="3" selection-end-line="582" selection-end-column="3" />
           <folding>
             <element signature="e#305#3910#0" expanded="false" />
-            <element signature="e#4335#7680#0" expanded="false" />
-            <element signature="e#7718#7812#0" expanded="false" />
-            <element signature="e#7866#8254#0" expanded="false" />
-            <element signature="e#8304#8555#0" expanded="false" />
-            <element signature="e#8616#8862#0" expanded="false" />
-            <element signature="e#8948#9158#0" expanded="false" />
-            <element signature="e#9833#23259#0" expanded="false" />
-            <element signature="e#23305#38169#0" expanded="false" />
-            <element signature="e#38217#41929#0" expanded="false" />
-            <element signature="e#41968#62249#0" expanded="false" />
+            <element signature="e#4338#7683#0" expanded="false" />
+            <element signature="e#7721#7815#0" expanded="false" />
+            <element signature="e#7869#8257#0" expanded="false" />
+            <element signature="e#8307#8558#0" expanded="false" />
+            <element signature="e#8619#8865#0" expanded="false" />
+            <element signature="e#8951#9161#0" expanded="false" />
+            <element signature="e#9836#23262#0" expanded="false" />
+            <element signature="e#23308#38172#0" expanded="false" />
+            <element signature="e#38220#41932#0" expanded="false" />
+            <element signature="e#41971#62252#0" expanded="false" />
+            <element signature="e#68291#68346#0" expanded="false" />
+            <marker date="1473953316680" expanded="false" signature="64507:67544" ph="..." />
+            <marker date="1473953316680" expanded="false" signature="67813:68281" ph="..." />
+            <marker date="1473953316680" expanded="false" signature="68367:69830" ph="..." />
           </folding>
         </state>
       </provider>
@@ -553,20 +614,24 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/GeoMig.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="402">
-          <caret line="1645" column="22" selection-start-line="1645" selection-start-column="22" selection-end-line="1645" selection-end-column="22" />
+        <state relative-caret-position="18">
+          <caret line="1741" column="0" selection-start-line="1741" selection-start-column="0" selection-end-line="1741" selection-end-column="0" />
           <folding>
             <element signature="e#305#3910#0" expanded="false" />
-            <element signature="e#4335#7680#0" expanded="false" />
-            <element signature="e#7718#7812#0" expanded="false" />
-            <element signature="e#7866#8254#0" expanded="false" />
-            <element signature="e#8304#8555#0" expanded="false" />
-            <element signature="e#8616#8862#0" expanded="false" />
-            <element signature="e#8948#9158#0" expanded="false" />
-            <element signature="e#9833#23259#0" expanded="false" />
-            <element signature="e#23305#38169#0" expanded="false" />
-            <element signature="e#38217#41929#0" expanded="false" />
-            <element signature="e#41968#62249#0" expanded="false" />
+            <element signature="e#4338#7683#0" expanded="false" />
+            <element signature="e#7721#7815#0" expanded="false" />
+            <element signature="e#7869#8257#0" expanded="false" />
+            <element signature="e#8307#8558#0" expanded="false" />
+            <element signature="e#8619#8865#0" expanded="false" />
+            <element signature="e#8951#9161#0" expanded="false" />
+            <element signature="e#9836#23262#0" expanded="false" />
+            <element signature="e#23308#38172#0" expanded="false" />
+            <element signature="e#38220#41932#0" expanded="false" />
+            <element signature="e#41971#62252#0" expanded="false" />
+            <element signature="e#68291#68346#0" expanded="false" />
+            <marker date="1473953316680" expanded="false" signature="64507:67544" ph="..." />
+            <marker date="1473953316680" expanded="false" signature="67813:68281" ph="..." />
+            <marker date="1473953316680" expanded="false" signature="68367:69830" ph="..." />
           </folding>
         </state>
       </provider>
