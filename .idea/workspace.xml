@@ -1,25 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="050fb100-0240-4a70-a41a-778e251719ea" name="Default" comment="First try to organize code">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/input_data/Uncertainties.xlsx" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Geothealler big function 3D-Testing-checkpoint.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Geothealler big function 3D-Testing-degree0-Copy1-checkpoint.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Geothealler big function 3D-Testing-degree0-checkpoint.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Sandstone Project-Tunning paramters-checkpoint.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GeMpy/GeoMig.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GeMpy/Visualization.py" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Prototype Notebook/Geothealler big function 3D-Testing-degree0.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Prototype Notebook/Geothealler big function 3D-Testing.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Prototype Notebook/Geothealler big function 3D.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Prototype Notebook/Kriging 6.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Prototype Notebook/Sandstone Project.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/input_data/a_Foliations.csv" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/input_data/a_Points.csv" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/legacy/Geothealler big function 3D-Testing-degree0-Copy1.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/legacy/Geothealler big function.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/legacy/Sandstone Project-Tunning paramters.ipynb" />
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/legacy/starting_theano.py" />
+    <list default="true" id="050fb100-0240-4a70-a41a-778e251719ea" name="Default" comment="Second try to organize code">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GeMpy/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/GeMpy/GeoMig.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/GeMpy/Visualization.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/GeMpy/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/pygeomod/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/pygeomod/build/lib/pygeomod/__init__.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/pygeomod/build/lib/pygeomod/colormaps.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/pygeomod/build/lib/pygeomod/geoPyMC.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/pygeomod/build/lib/pygeomod/geogrid.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/pygeomod/build/lib/pygeomod/geomodeller_xml_obj.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/pygeomod/build/lib/pygeomod/plot_grav_mag.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/pygeomod/build/lib/pygeomod/struct_data.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/build/lib/pygeomod/setup.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/setup.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="GeMpy.iws" />
@@ -43,11 +39,33 @@
     <favorites_list name="GeMpy" />
   </component>
   <component name="FileEditorManager">
-    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300" />
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="setup.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/setup.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="162">
+              <caret line="9" column="46" selection-start-line="9" selection-start-column="46" selection-end-line="9" selection-end-column="46" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/GeMpy/__init__.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="90">
+              <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
+        <option value="Setup Script" />
         <option value="Python Script" />
       </list>
     </option>
@@ -70,6 +88,8 @@
         <option value="$PROJECT_DIR$/starting theano.py" />
         <option value="$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb" />
         <option value="$PROJECT_DIR$/GeoMig.py" />
+        <option value="$PROJECT_DIR$/setup.py" />
+        <option value="$PROJECT_DIR$/GeMpy/__init__.py" />
       </list>
     </option>
   </component>
@@ -136,7 +156,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="settings.editor.selected.configurable" value="vcs.Git" />
+    <property name="settings.editor.selected.configurable" value="vcs.Perforce" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../pygeomod" />
   </component>
@@ -497,7 +517,7 @@
     <option name="remove_strategy" value="false" />
   </component>
   <component name="SvnConfiguration">
-    <configuration />
+    <configuration>$USER_HOME$/.subversion</configuration>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -535,7 +555,14 @@
       <option name="project" value="LOCAL" />
       <updated>1477054862254</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Second try to organize code">
+      <created>1477055600921</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1477055600921</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TodoView">
@@ -555,9 +582,9 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32985386" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32881" sideWeight="0.50193477" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20041753" sideWeight="0.49806523" order="10" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.20041753" sideWeight="0.49806523" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32985386" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32985386" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2498618" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -587,7 +614,8 @@
     <MESSAGE value="added a matplotlib visualization of the potential field&#10;started the degree 2 of universal kriging&#10;" />
     <MESSAGE value="testing vs geomodeller" />
     <MESSAGE value="First try to organize code" />
-    <option name="LAST_COMMIT_MESSAGE" value="First try to organize code" />
+    <MESSAGE value="Second try to organize code" />
+    <option name="LAST_COMMIT_MESSAGE" value="Second try to organize code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -687,6 +715,30 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="288">
           <caret line="16" column="20" selection-start-line="16" selection-start-column="20" selection-end-line="16" selection-end-column="20" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pygeomod/pygeomod/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/setup.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="162">
+          <caret line="9" column="46" selection-start-line="9" selection-start-column="46" selection-end-line="9" selection-end-column="46" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GeMpy/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="90">
+          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
           <folding />
         </state>
       </provider>
