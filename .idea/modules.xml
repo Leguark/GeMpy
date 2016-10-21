@@ -3,7 +3,6 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/GeMpy.iml" filepath="$PROJECT_DIR$/.idea/GeMpy.iml" />
-      <module fileurl="file://$PROJECT_DIR$/../pygeomod/.idea/pygeomod.iml" filepath="$PROJECT_DIR$/../pygeomod/.idea/pygeomod.iml" />
     </modules>
   </component>
 </project>
