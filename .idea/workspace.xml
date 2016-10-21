@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="050fb100-0240-4a70-a41a-778e251719ea" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/pygeomod" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/GeoMig.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Geothealler big function 3D-Testing-degree0.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Geothealler big function 3D-Testing.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Geothealler big function 3D.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Geothealler big function.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Kriging 6.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Sandstone Project.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Uncertainties.xlsx" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Visualization.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/a_Foliations.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/a_Points.csv" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/starting_theano.py" afterPath="" />
+    <list default="true" id="050fb100-0240-4a70-a41a-778e251719ea" name="Default" comment="First try to organize code">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/input_data/Uncertainties.xlsx" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Geothealler big function 3D-Testing-checkpoint.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Geothealler big function 3D-Testing-degree0-Copy1-checkpoint.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Geothealler big function 3D-Testing-degree0-checkpoint.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.ipynb_checkpoints/Sandstone Project-Tunning paramters-checkpoint.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GeMpy/GeoMig.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GeMpy/Visualization.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Prototype Notebook/Geothealler big function 3D-Testing-degree0.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Prototype Notebook/Geothealler big function 3D-Testing.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Prototype Notebook/Geothealler big function 3D.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Prototype Notebook/Kriging 6.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/Prototype Notebook/Sandstone Project.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/input_data/a_Foliations.csv" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/input_data/a_Points.csv" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/legacy/Geothealler big function 3D-Testing-degree0-Copy1.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/legacy/Geothealler big function.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/legacy/Sandstone Project-Tunning paramters.ipynb" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/legacy/starting_theano.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="GeMpy.iws" />
@@ -48,8 +53,16 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="PREVIOUS_COMMIT_AUTHORS">
+      <list>
+        <option value="Miguel de la Varga &lt;miguel.de.la.varga@rwth-aachen.de&gt;" />
+      </list>
+    </option>
     <option name="UPDATE_TYPE" value="REBASE" />
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="PUSH_TAGS">
+      <GitPushTagMode />
+    </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
@@ -123,7 +136,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="settings.editor.selected.configurable" value="settings.github" />
+    <property name="settings.editor.selected.configurable" value="vcs.Git" />
     <property name="settings.editor.splitter.proportion" value="0.2" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/../pygeomod" />
   </component>
@@ -515,7 +528,14 @@
       <option name="project" value="LOCAL" />
       <updated>1473884486462</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="First try to organize code">
+      <created>1477054862254</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1477054862254</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TodoView">
@@ -566,7 +586,8 @@
     <MESSAGE value="Finding out all the problems with float32 operations:&#10;- All the euclidean distances now are done in the CPU in float64&#10;- When the range is too low and I use the GPU there are some nan. I should correct this using switch&#10;&#10;Also I found a bug in the dips, they almost dont have any effect in the interpolation. I have to try to increase the rank of the universal part but I dont have too much faith&#10;" />
     <MESSAGE value="added a matplotlib visualization of the potential field&#10;started the degree 2 of universal kriging&#10;" />
     <MESSAGE value="testing vs geomodeller" />
-    <option name="LAST_COMMIT_MESSAGE" value="testing vs geomodeller" />
+    <MESSAGE value="First try to organize code" />
+    <option name="LAST_COMMIT_MESSAGE" value="First try to organize code" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
