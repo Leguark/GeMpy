@@ -96,6 +96,10 @@ class Interpolator(GeoPlot):
         length_of_U_I = grade_universal
         length_of_C = length_of_CG + length_of_CGI# + length_of_U_I
 
+        # Extra parameters
+        i_reescale = T.scalar()
+        gi_reescale = T.scalar()
+
         # ==========================================
         # Calculation of the covariance Matrix
         #===========================================
@@ -183,82 +187,82 @@ class Interpolator(GeoPlot):
 
         # Perpendicularity matrix (Explain better what this term means). Boolean matrix to separate cross-covariance and
         # every gradient direction covariance
-        perpendicularity_matrix = T.ones_like(SED_dips_dips)
+        perpendicularity_matrix = T.zeros_like(SED_dips_dips)
 
         # Cross-covariances of x
         perpendicularity_matrix = T.set_subtensor(
-            perpendicularity_matrix[0:dips_position.shape[0], 0:dips_position.shape[0]], 0)
+            perpendicularity_matrix[0:dips_position.shape[0], 0:dips_position.shape[0]], 1)
 
         # Cross-covariances of y
         perpendicularity_matrix = T.set_subtensor(
             perpendicularity_matrix[dips_position.shape[0]:dips_position.shape[0] * 2,
-            dips_position.shape[0]:dips_position.shape[0] * 2], 0)
+            dips_position.shape[0]:dips_position.shape[0] * 2], 1)
 
         # Cross-covariances of y
         perpendicularity_matrix = T.set_subtensor(
             perpendicularity_matrix[dips_position.shape[0] * 2:dips_position.shape[0] * 3,
-            dips_position.shape[0] * 2:dips_position.shape[0] * 3], 0)
+            dips_position.shape[0] * 2:dips_position.shape[0] * 3], 1)
 
         # ==========================
         # Creating covariance Matrix
         # ==========================
         # Covariance matrix for interfaces
-        C_I = ((SED_rest_rest < self.a) * self.c_o_pot_field *              # Rest - Rest Covariances Matrix
+        C_I = (self.c_o * i_reescale * (
+               (SED_rest_rest < self.a) *              # Rest - Rest Covariances Matrix
                (1 - 7 * (SED_rest_rest / self.a) ** 2 +
                 35 / 4 * (SED_rest_rest / self.a) ** 3 -
                 7 / 2 * (SED_rest_rest / self.a) ** 5 +
                 3 / 4 * (SED_rest_rest / self.a) ** 7) -
-               ((SED_ref_rest < self.a) * self.c_o_pot_field *              # Reference - Rest
-               (1 - 7 * (SED_ref_rest / self.a) ** 2 +
+               ((SED_ref_rest < self.a) *              # Reference - Rest
+                (1 - 7 * (SED_ref_rest / self.a) ** 2 +
                 35 / 4 * (SED_ref_rest / self.a) ** 3 -
                 7 / 2 * (SED_ref_rest / self.a) ** 5 +
                 3 / 4 * (SED_ref_rest / self.a) ** 7)) -
-               ((SED_rest_ref < self.a) * self.c_o_pot_field *             # Rest - Reference
-               (1 - 7 * (SED_rest_ref / self.a) ** 2 +
+               ((SED_rest_ref < self.a) *             # Rest - Reference
+                (1 - 7 * (SED_rest_ref / self.a) ** 2 +
                 35 / 4 * (SED_rest_ref / self.a) ** 3 -
                 7 / 2 * (SED_rest_ref / self.a) ** 5 +
                 3 / 4 * (SED_rest_ref / self.a) ** 7)) +
-               ((SED_ref_ref < self.a) * self.c_o_pot_field *             # Reference - References
-               (1 - 7 * (SED_ref_ref / self.a) ** 2 +
+               ((SED_ref_ref < self.a) *             # Reference - References
+                (1 - 7 * (SED_ref_ref / self.a) ** 2 +
                 35 / 4 * (SED_ref_ref / self.a) ** 3 -
                 7 / 2 * (SED_ref_ref / self.a) ** 5 +
-                3 / 4 * (SED_ref_ref / self.a) ** 7)))
+                3 / 4 * (SED_ref_ref / self.a) ** 7))))
 
         # Covariance matrix for gradients at every xyz direction and their cross-covariances
         C_G = T.switch(
             T.eq(SED_dips_dips, 0),  # This is the condition
             0,                       # If true it is equal to 0. This is how a direction affect another
-            (                        # else
-             (-h_u * h_v / SED_dips_dips ** 2) *
-             ((1 / SED_dips_dips) *
-              (SED_dips_dips < self.a) *    # first derivative
-              (-7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *
-              (8 * self.a ** 2 + 9 * self.a * SED_dips_dips + 3 * SED_dips_dips ** 2) * self.c_o) /
-              (4 * self.a ** 7) -
-              (SED_dips_dips < self.a) *    # Second derivative
-              (-7 * (4. * self.a ** 5. - 15. * self.a ** 4. * SED_dips_dips + 20. *(self.a ** 2) *
-               (SED_dips_dips ** 3) - 9 * SED_dips_dips ** 5) * self.c_o) / (2 * self.a ** 7)) +
+            (                        # else, following Chiles book
+             (h_u * h_v / SED_dips_dips ** 2) *
+             ((
+              (SED_dips_dips < self.a) *  # first derivative
+              (-self.c_o * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_dips / self.a ** 3 -
+                            35 / 2 * SED_dips_dips ** 3 / self.a ** 5 + 21 / 4 * SED_dips_dips ** 5 / self.a ** 7))) +
+              (SED_dips_dips < self.a) *  # Second derivative
+              self.c_o * 7 * (9 * SED_dips_dips ** 5 - 20 * self.a ** 2 * SED_dips_dips ** 3 +
+                              15 * self.a ** 4 * SED_dips_dips - 4 * self.a ** 5) / (2 * self.a ** 7)) -
              (perpendicularity_matrix *
-              (SED_dips_dips < self.a) *     # first derivative
-              (-7 * (self.a - SED_dips_dips) ** 3 * SED_dips_dips *8 * self.a ** 2 + 9 * self.a *
-               SED_dips_dips + 3 * SED_dips_dips ** 2) * self.c_o) / (4 * self.a ** 7)
-            )
-                    )
+              (SED_dips_dips < self.a) *  # first derivative
+              self.c_o * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_dips / self.a ** 3 -
+                          35 / 2 * SED_dips_dips ** 3 / self.a ** 5 + 21 / 4 * SED_dips_dips ** 5 / self.a ** 7)))
+        )
 
         # Setting nugget effect of the gradients
-        C_G = T.fill_diagonal(C_G, self.nugget_effect_grad)
-
+        C_G = T.fill_diagonal(C_G, -self.c_o * (-14/self.a**2) + self.nugget_effect_grad)
 
         # Cross-Covariance gradients-interfaces
-        C_GI = (hu_rest / SED_dips_rest *
-                (SED_dips_rest < self.a) *    # first derivative
-                (-7 * (self.a - SED_dips_rest) ** 3 * SED_dips_rest *
-                 (8 * self.a ** 2 + 9 * self.a * SED_dips_rest + 3 * SED_dips_rest ** 2) * self.c_o) / (4 * self.a ** 7) -
-                hu_ref / SED_dips_ref *
-                (SED_dips_ref < self.a) *     # first derivative
-                (-7 * (self.a - SED_dips_ref) ** 3 * SED_dips_ref *
-                 (8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * self.c_o) / (4 * self.a ** 7)
-                ).T
+        C_GI = gi_reescale * (
+            (hu_rest *
+             (SED_dips_rest < self.a) *  # first derivative
+             (- self.c_o * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_rest / self.a ** 3 -
+                            35 / 2 * SED_dips_rest ** 3 / self.a ** 5 + 21 / 4 * SED_dips_rest ** 5 / self.a ** 7))) -
+            (hu_ref *
+             (SED_dips_ref < self.a) *  # first derivative
+             (- self.c_o * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_ref / self.a ** 3 -
+                            35 / 2 * SED_dips_ref ** 3 / self.a ** 5 + 21 / 4 * SED_dips_ref ** 5 / self.a ** 7)))
+        ).T
+
         """
         # ==========================
         # Condition of universality 1 degree
@@ -373,7 +377,7 @@ class Interpolator(GeoPlot):
         C_matrix = T.zeros((length_of_C, length_of_C))
 
         # First row of matrices
-        C_matrix = T.set_subtensor(C_matrix[0:length_of_CG, 0:length_of_CG], - C_G)
+        C_matrix = T.set_subtensor(C_matrix[0:length_of_CG, 0:length_of_CG], C_G)
 
         C_matrix = T.set_subtensor(
             C_matrix[0:length_of_CG, length_of_CG:length_of_CG + length_of_CGI], C_GI.T)
@@ -468,7 +472,8 @@ class Interpolator(GeoPlot):
         """
 
         self.interpolate = theano.function(
-            [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points],
+            [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points,
+             i_reescale, gi_reescale],
             [Z_x, weigths, C_matrix, G_x, G_y, G_z],
             on_unused_input="warn", profile=True)
 
@@ -1429,6 +1434,7 @@ class Interpolator(GeoPlot):
                  (SED_dips_dips < self.a) *  # first derivative
                   f * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_dips / self.a ** 3 -
                   35 / 2 * SED_dips_dips ** 3 / self.a ** 5 + 21 / 4 * SED_dips_dips ** 5 / self.a ** 7)))
+
 
 
         C_G = T.fill_diagonal(C_G,  (-g * (-14 / self.a ** 2))+d)  # This sets the variance of the dips
