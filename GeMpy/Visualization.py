@@ -113,7 +113,6 @@ class GeoPlot():
         levels = kwargs.get("plot_layer", None)
         kwargs.get("linear_interpolation", False)
 
-
         if not "ax" in kwargs:
             colorbar = kwargs.get('colorbar', True)
             # create new axis for plot
@@ -157,7 +156,10 @@ class GeoPlot():
                 grid_slice = self.potential_field[pos, :, :]
                 grid_slice = grid_slice.transpose()
                 plt.contour(grid_slice, 10, extent=(self.xmin, self.xmax, self.zmin, self.zmax))
-
+                if colorbar:
+                    plt.colorbar()
             # General plot settings
-            plt.margins(x = 0.1, y = 0.1)
+            plt.xlim(self.xmin, self.xmax)
+            plt.ylim(self.zmin, self.zmax)
+          #  plt.margins(x = 0.1, y = 0.1)
             plt.title("Model Section. Direction: %s. Cell position: %s" % (direction,cell_pos))

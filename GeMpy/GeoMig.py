@@ -102,7 +102,7 @@ class Interpolator(GeoPlot):
         # Extra parameters
         i_reescale = T.scalar()
         gi_reescale = T.scalar()
-
+        n2 =  T.scalar()
         # ==========================================
         # Calculation of the covariance Matrix
         # ===========================================
@@ -438,8 +438,8 @@ class Interpolator(GeoPlot):
         # Gradient contribution
         sigma_0_grad = T.sum(
             (weights[:length_of_CG, :] *
-             gi_reescale *
-             (hu_SimPoint *
+             n2 * gi_reescale *
+             (-hu_SimPoint *
               (SED_dips_SimPoint < self.a) *  # first derivative
               (- self.c_o * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_SimPoint / self.a ** 3 -
                              35 / 2 * SED_dips_SimPoint ** 3 / self.a ** 5 +
@@ -448,9 +448,9 @@ class Interpolator(GeoPlot):
 
         # Interface contribution
         sigma_0_interf = (T.sum(
-            weights[length_of_CG:length_of_CG + length_of_CGI, :] *
+            -weights[length_of_CG:length_of_CG + length_of_CGI, :] *
             (self.c_o * i_reescale * (
-             (SED_rest_rest < self.a) *  # SimPoint - Rest Covariances Matrix
+             (SED_rest_SimPoint < self.a) *  # SimPoint - Rest Covariances Matrix
              (1 - 7 * (SED_rest_SimPoint / self.a) ** 2 +
               35 / 4 * (SED_rest_SimPoint / self.a) ** 3 -
               7 / 2 * (SED_rest_SimPoint / self.a) ** 5 +
@@ -461,23 +461,38 @@ class Interpolator(GeoPlot):
                7 / 2 * (SED_ref_SimPoint / self.a) ** 5 +
               3 / 4 * (SED_ref_SimPoint / self.a) ** 7)))), axis=0))
 
+        """
+        k = (self.c_o * i_reescale * (
+             (SED_rest_SimPoint < self.a) *  # SimPoint - Rest Covariances Matrix
+             (1 - 7 * (SED_rest_SimPoint / self.a) ** 2 +
+              35 / 4 * (SED_rest_SimPoint / self.a) ** 3 -
+              7 / 2 * (SED_rest_SimPoint / self.a) ** 5 +
+              3 / 4 * (SED_rest_SimPoint / self.a) ** 7) ))
+
+        k2=     ((SED_ref_SimPoint < self.a) *  # SimPoint- Ref
+              (1 - 7 * (SED_ref_SimPoint / self.a) ** 2 +
+               35 / 4 * (SED_ref_SimPoint / self.a) ** 3 -
+               7 / 2 * (SED_ref_SimPoint / self.a) ** 5 +
+              3 / 4 * (SED_ref_SimPoint / self.a) ** 7))
+        """
         if self.u_grade.get_value() == 0:
             Z_x = (sigma_0_grad + sigma_0_interf)
 
         else:
-            gi_reescale_aux = T.repeat(gi_reescale, 9)
-            gi_reescale_aux[:3] = 1
-
+            gi_rescale_aux = T.repeat(gi_reescale, 9)
+            gi_rescale_aux = T.set_subtensor(gi_rescale_aux[:3], 1)
+            na = T.tile(gi_rescale_aux[:grade_universal], (grid_val.shape[0], 1)).T
             f_0 = (T.sum(
-                 weights[-length_of_U_I:, :] * gi_reescale * gi_reescale_aux[:grade_universal] *
+                 weights[-length_of_U_I:, :] * gi_reescale * na *
                  universal_matrix[:grade_universal], axis=0))
 
             Z_x = (sigma_0_grad + sigma_0_interf + f_0)
-
+           # Z_x = f_0
         self.interpolate = theano.function(
             [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points,
-             i_reescale, gi_reescale],
-            [Z_x, weights, C_matrix, G_x, G_y, G_z],
+             i_reescale, gi_reescale, n2],
+             [Z_x, C_matrix, weights,
+               DK_parameters, G_x, G_y, G_z],
             on_unused_input="warn", profile=False)
 
 
