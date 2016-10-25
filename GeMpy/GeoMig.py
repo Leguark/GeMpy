@@ -19,10 +19,10 @@ class Interpolator(GeoPlot):
     """
     Class which contain all needed methods to perform potential field implicit modelling
     """
-    def __init__(self, range_var = 6, c_o = -0.58888888, nugget_effect = 0.3):
+    def __init__(self, range_var=6, c_o=-0.58888888, nugget_effect=0.3, u_grade=9):
         """
         Basic interpolator parameters. Also here it is possible to change some flags of theano
-        :param range: Range of the variogram, it is recommended the distance of the longest diagonal
+        :param range_var: Range of the variogram, it is recommended the distance of the longest diagonal
         :param c_o: Sill of the variogram
         """
         theano.config.optimizer = "fast_run"
@@ -32,6 +32,9 @@ class Interpolator(GeoPlot):
         self.a = theano.shared(range_var, "range")
         self.c_o = theano.shared(c_o, "covariance at 0")
         self.nugget_effect_grad = theano.shared(nugget_effect, "nugget effect of the grade")
+        self.u_grade = theano.shared(u_grade)
+
+        # TODO: Assert u_grade is 0,3 or 9
 
     def create_regular_grid_2D(self):
         """
@@ -88,13 +91,13 @@ class Interpolator(GeoPlot):
 
         # Init values
         n_dimensions = 3
-        grade_universal = 9
+        grade_universal = self.u_grade
 
         # Calculating the dimensions of the
         length_of_CG = dips_position.shape[0] * n_dimensions
         length_of_CGI = rest_layer_points.shape[0]
         length_of_U_I = grade_universal
-        length_of_C = length_of_CG + length_of_CGI# + length_of_U_I
+        length_of_C = length_of_CG + length_of_CGI + length_of_U_I
 
         # Extra parameters
         i_reescale = T.scalar()
@@ -102,7 +105,7 @@ class Interpolator(GeoPlot):
 
         # ==========================================
         # Calculation of the covariance Matrix
-        #===========================================
+        # ===========================================
         # Auxiliary tile for dips and transformation to float 64 of variables in order to calculate precise euclidian
         # distances
         _aux_dips_pos = T.tile(dips_position, (n_dimensions, 1)).astype("float64")
@@ -185,6 +188,20 @@ class Interpolator(GeoPlot):
             (dips_position[:, 2] - ref_layer_points[:, 2].reshape((ref_layer_points[:, 2].shape[0], 1))).T
         )
 
+        # Cartesian distances between the point to simulate and the dips
+        hu_SimPoint = T.vertical_stack(
+            (dips_position[:, 0] - grid_val[:, 0].reshape((grid_val[:, 0].shape[0], 1))).T,
+            (dips_position[:, 1] - grid_val[:, 1].reshape((grid_val[:, 1].shape[0], 1))).T,
+            (dips_position[:, 2] - grid_val[:, 2].reshape((grid_val[:, 2].shape[0], 1))).T
+        )
+
+        # Cartesian distances between reference points and rest
+        hx = T.stack(
+            (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
+            (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
+            (rest_layer_points[:, 2] - ref_layer_points[:, 2])
+        ).T
+
         # Perpendicularity matrix (Explain better what this term means). Boolean matrix to separate cross-covariance and
         # every gradient direction covariance
         perpendicularity_matrix = T.zeros_like(SED_dips_dips)
@@ -227,7 +244,7 @@ class Interpolator(GeoPlot):
                 (1 - 7 * (SED_ref_ref / self.a) ** 2 +
                 35 / 4 * (SED_ref_ref / self.a) ** 3 -
                 7 / 2 * (SED_ref_ref / self.a) ** 5 +
-                3 / 4 * (SED_ref_ref / self.a) ** 7))))
+                3 / 4 * (SED_ref_ref / self.a) ** 7)))) + 10e-9
 
         # Covariance matrix for gradients at every xyz direction and their cross-covariances
         C_G = T.switch(
@@ -263,113 +280,104 @@ class Interpolator(GeoPlot):
                             35 / 2 * SED_dips_ref ** 3 / self.a ** 5 + 21 / 4 * SED_dips_ref ** 5 / self.a ** 7)))
         ).T
 
-        """
-        # ==========================
-        # Condition of universality 1 degree
-        # Gradients
+        if self.u_grade.get_value() == 3:
+            # ==========================
+            # Condition of universality 1 degree
 
-        n = dips_position.shape[0]
-        U_G = T.zeros((n * n_dimensions, n_dimensions))
-        # x
-        U_G = T.set_subtensor(
-            U_G[:n, 0], 1)
-        # y
-        U_G = T.set_subtensor(
-            U_G[n:n * 2, 1], 1
-        )
-        # z
-        U_G = T.set_subtensor(
-            U_G[n * 2: n * 3, 2], 1
-        )
+            # Gradients
+            n = dips_position.shape[0]
+            U_G = T.zeros((n * n_dimensions, n_dimensions))
+            # x
+            U_G = T.set_subtensor(
+                U_G[:n, 0], 1)
+            # y
+            U_G = T.set_subtensor(
+                U_G[n:n * 2, 1], 1
+            )
+            # z
+            U_G = T.set_subtensor(
+                U_G[n * 2: n * 3, 2], 1
+            )
 
-        # Interface
-               # Cartesian distances between reference points and rest
+            # Interface
+            U_I = -hx*gi_reescale
 
-        hx = T.stack(
-            (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
-            (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
-            (rest_layer_points[:, 2] - ref_layer_points[:, 2])
-        ).T
+        elif self.u_grade.get_value() == 9:
+            # ==========================
+            # Condition of universality 2 degree
+            # Gradients
 
-        U_I = hx
+            n = dips_position.shape[0]
+            U_G = T.zeros((n * n_dimensions, 3 * n_dimensions))
+            # x
+            U_G = T.set_subtensor(
+                U_G[:n, 0], 1)
+            # y
+            U_G = T.set_subtensor(
+                U_G[n * 1:n * 2, 1], 1
+            )
+            # z
+            U_G = T.set_subtensor(
+                U_G[n * 2: n * 3, 2], 1
+            )
+            # x**2
+            U_G = T.set_subtensor(
+                U_G[:n, 3], 2 * gi_reescale * dips_position[:,0]
+            )
+            # y**2
+            U_G = T.set_subtensor(
+                U_G[n * 1:n * 2, 4], 2 * gi_reescale * dips_position[:, 1]
+            )
+            # z**2
+            U_G = T.set_subtensor(
+                U_G[n * 2: n * 3, 5], 2 * gi_reescale * dips_position[:, 2]
+            )
+            # xy
+            U_G = T.set_subtensor(
+                U_G[:n, 6], gi_reescale * dips_position[:, 1] # This is y
+            )
 
+            U_G = T.set_subtensor(
+                U_G[n * 1:n * 2, 6], gi_reescale * dips_position[:, 0]  # This is x
+            )
 
-        # ==========================
-        # Condition of universality 2 degree
-        # Gradients
+            # xz
+            U_G = T.set_subtensor(
+                U_G[:n, 7], gi_reescale * dips_position[:, 2]  # This is z
+            )
+            U_G = T.set_subtensor(
+                U_G[n * 2: n * 3, 7], gi_reescale * dips_position[:, 0]  # This is x
+            )
 
-        n = dips_position.shape[0]
-        U_G = T.zeros((n * n_dimensions, 3 * n_dimensions))
-        # x
-        U_G = T.set_subtensor(
-            U_G[:n, 0], 1)
-        # y
-        U_G = T.set_subtensor(
-            U_G[n * 1:n * 2, 1], 1
-        )
-        # z
-        U_G = T.set_subtensor(
-            U_G[n * 2: n * 3, 2], 1
-        )
-        # x**2
-        U_G = T.set_subtensor(
-            U_G[:n, 3], 2 * dips_position[:,0]
-        )
-        # y**2
-        U_G = T.set_subtensor(
-            U_G[n * 1:n * 2, 4], 2 * dips_position[:, 1]
-        )
-        # z**2
-        U_G = T.set_subtensor(
-            U_G[n * 2: n * 3, 5], 2 * dips_position[:, 2]
-        )
-        # xy
-        U_G = T.set_subtensor(
-            U_G[:n, 6], dips_position[:, 1] # This is y
-        )
+            # yz
 
-        U_G = T.set_subtensor(
-            U_G[n * 1:n * 2, 6], dips_position[:, 0]  # This is x
-        )
-
-        # xz
-        U_G = T.set_subtensor(
-            U_G[:n, 7], dips_position[:, 2]  # This is z
-        )
-        U_G = T.set_subtensor(
-            U_G[n * 2: n * 3, 7], dips_position[:, 0]  # This is x
-        )
-
-        # yz
-
-        U_G = T.set_subtensor(
-            U_G[n * 1:n * 2, 8], dips_position[:, 2]  # This is z
-        )
+            U_G = T.set_subtensor(
+                U_G[n * 1:n * 2, 8], gi_reescale * dips_position[:, 2]  # This is z
+            )
 
 
-        U_G = T.set_subtensor(
-            U_G[n * 2:n * 3, 8], dips_position[:, 1]  # This is y
-        )
+            U_G = T.set_subtensor(
+                U_G[n * 2:n * 3, 8], gi_reescale * dips_position[:, 1]  # This is y
+            )
 
-        # Interface
+            U_G =  U_G
+            # Interface
 
-        # Cartesian distances between reference points and rest
+            # Cartesian distances between reference points and rest
 
-        U_I = T.stack(
-            (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
-            (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
-            (rest_layer_points[:, 2] - ref_layer_points[:, 2]),
-            (rest_layer_points[:, 0]**2 - ref_layer_points[:, 0]**2),
-            (rest_layer_points[:, 1]**2 - ref_layer_points[:, 1]**2),
-            (rest_layer_points[:, 2]**2 - ref_layer_points[:, 2]**2),
-            (rest_layer_points[:, 0]*rest_layer_points[:, 1] - ref_layer_points[:, 0]*ref_layer_points[:, 1]),
-            (rest_layer_points[:, 0]*rest_layer_points[:, 2] - ref_layer_points[:, 0]*ref_layer_points[:, 2]),
-            (rest_layer_points[:, 1]*rest_layer_points[:, 2] - ref_layer_points[:, 1]*ref_layer_points[:, 2]),
-        ).T
+            U_I = - T.stack(
+                gi_reescale * (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
+                gi_reescale * (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
+                gi_reescale * (rest_layer_points[:, 2] - ref_layer_points[:, 2]),
+                gi_reescale ** 2 * (rest_layer_points[:, 0]**2 - ref_layer_points[:, 0]**2),
+                gi_reescale ** 2* (rest_layer_points[:, 1]**2 - ref_layer_points[:, 1]**2),
+                gi_reescale ** 2* (rest_layer_points[:, 2]**2 - ref_layer_points[:, 2]**2),
+                gi_reescale ** 2* (rest_layer_points[:, 0]*rest_layer_points[:, 1] - ref_layer_points[:, 0]*ref_layer_points[:, 1]),
+                gi_reescale ** 2* (rest_layer_points[:, 0]*rest_layer_points[:, 2] - ref_layer_points[:, 0]*ref_layer_points[:, 2]),
+                gi_reescale ** 2* (rest_layer_points[:, 1]*rest_layer_points[:, 2] - ref_layer_points[:, 1]*ref_layer_points[:, 2]),
+            ).T
 
-        #U_I = hx
-
-        """
+            #U_I = hx
 
         # =================================
         # Creation of the Covariance Matrix
@@ -382,8 +390,9 @@ class Interpolator(GeoPlot):
         C_matrix = T.set_subtensor(
             C_matrix[0:length_of_CG, length_of_CG:length_of_CG + length_of_CGI], C_GI.T)
 
-   #     C_matrix = T.set_subtensor(
-   #         C_matrix[0:length_of_CG, -length_of_U_I:], U_G)
+        if not self.u_grade.get_value() == 0:
+            C_matrix = T.set_subtensor(
+                C_matrix[0:length_of_CG, -length_of_U_I:], U_G)
 
         # Second row of matrices
         C_matrix = T.set_subtensor(
@@ -391,14 +400,15 @@ class Interpolator(GeoPlot):
         C_matrix = T.set_subtensor(
             C_matrix[length_of_CG:length_of_CG + length_of_CGI, length_of_CG:length_of_CG + length_of_CGI], C_I)
 
-   #     C_matrix = T.set_subtensor(
-   #         C_matrix[length_of_CG:length_of_CG + length_of_CGI, -length_of_U_I:], U_I)
+        if not self.u_grade.get_value() == 0:
+            C_matrix = T.set_subtensor(
+                C_matrix[length_of_CG:length_of_CG + length_of_CGI, -length_of_U_I:], U_I)
 
-        # Third row of matrices
-   #     C_matrix = T.set_subtensor(
-   #         C_matrix[-length_of_U_I:, 0:length_of_CG], U_G.T)
-   #     C_matrix = T.set_subtensor(
-   #         C_matrix[-length_of_U_I:, length_of_CG:length_of_CG + length_of_CGI], U_I.T)
+            # Third row of matrices
+            C_matrix = T.set_subtensor(
+                C_matrix[-length_of_U_I:, 0:length_of_CG], U_G.T)
+            C_matrix = T.set_subtensor(
+                C_matrix[-length_of_U_I:, length_of_CG:length_of_CG + length_of_CGI], U_I.T)
 
         # =====================
         # Creation of the gradients G vector
@@ -414,68 +424,61 @@ class Interpolator(GeoPlot):
         b = T.set_subtensor(b[0:G.shape[0]], G)
 
         # Solving the kriging system
+        # TODO: look for an eficient way to substitute nlianlg by a theano operation
         DK_parameters = T.dot(T.nlinalg.matrix_inverse(C_matrix), b)
 
         # ==============
         # Interpolator
         # ==============
-        # Cartesian distances between the point to simulate and the dips
-        hu_SimPoint = T.vertical_stack(
-            (dips_position[:, 0] - grid_val[:, 0].reshape((grid_val[:, 0].shape[0], 1))).T,
-            (dips_position[:, 1] - grid_val[:, 1].reshape((grid_val[:, 1].shape[0], 1))).T,
-            (dips_position[:, 2] - grid_val[:, 2].reshape((grid_val[:, 2].shape[0], 1))).T
-        )
 
-        weigths = T.tile(DK_parameters, (grid_val.shape[0], 1)).T
+        # Creation of a matrix of dimensions equal to the grid with the weights for every point (big 4D matrix in
+        # ravel form)
+        weights = T.tile(DK_parameters, (grid_val.shape[0], 1)).T
 
-        sigma_0_grad = (
-            T.sum(
-             weigths[:length_of_CG, :] *
-             hu_SimPoint / SED_dips_SimPoint *
-             ((SED_dips_SimPoint < self.a) *         # first derivative
-              (-7 * (self.a - SED_dips_SimPoint) ** 3 * SED_dips_SimPoint *
-              (8 * self.a ** 2 + 9 * self.a * SED_dips_SimPoint + 3 * SED_dips_SimPoint ** 2) * 1) / (4 * self.a ** 7))
-             , axis=0))
+        # Gradient contribution
+        sigma_0_grad = T.sum(
+            (weights[:length_of_CG, :] *
+             gi_reescale *
+             (hu_SimPoint *
+              (SED_dips_SimPoint < self.a) *  # first derivative
+              (- self.c_o * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_SimPoint / self.a ** 3 -
+                             35 / 2 * SED_dips_SimPoint ** 3 / self.a ** 5 +
+                             21 / 4 * SED_dips_SimPoint ** 5 / self.a ** 7)))),
+            axis=0)
 
+        # Interface contribution
         sigma_0_interf = (T.sum(
-            weigths[length_of_CG:length_of_CG + length_of_CGI, :] *
-            ((SED_rest_SimPoint < self.a) * self.c_o *               # Covariance cubic to rest
+            weights[length_of_CG:length_of_CG + length_of_CGI, :] *
+            (self.c_o * i_reescale * (
+             (SED_rest_rest < self.a) *  # SimPoint - Rest Covariances Matrix
              (1 - 7 * (SED_rest_SimPoint / self.a) ** 2 +
-             35 / 4 * (SED_rest_SimPoint / self.a) ** 3 -
-             7 / 2 * (SED_rest_SimPoint / self.a) ** 5 +
-             3 / 4 * (SED_rest_SimPoint / self.a) ** 7) -
-             (SED_ref_SimPoint < self.a) * self.c_o *                # Covariance cubic to ref
-             (1 - 7 * (SED_ref_SimPoint / self.a) ** 2 +
-             35 / 4 * (SED_ref_SimPoint / self.a) ** 3 -
-             7 / 2 * (SED_ref_SimPoint / self.a) ** 5 +
-             3 / 4 * (SED_ref_SimPoint / self.a) ** 7)
-             ), axis=0))
+              35 / 4 * (SED_rest_SimPoint / self.a) ** 3 -
+              7 / 2 * (SED_rest_SimPoint / self.a) ** 5 +
+              3 / 4 * (SED_rest_SimPoint / self.a) ** 7) -
+             ((SED_ref_SimPoint < self.a) *  # SimPoint- Ref
+              (1 - 7 * (SED_ref_SimPoint / self.a) ** 2 +
+               35 / 4 * (SED_ref_SimPoint / self.a) ** 3 -
+               7 / 2 * (SED_ref_SimPoint / self.a) ** 5 +
+              3 / 4 * (SED_ref_SimPoint / self.a) ** 7)))), axis=0))
 
-        f_0 = (T.sum(
-            weigths[-length_of_U_I:, :] * universal_matrix, axis=0))
+        if self.u_grade.get_value() == 0:
+            Z_x = (sigma_0_grad + sigma_0_interf)
 
-        Z_x = (sigma_0_grad + sigma_0_interf) #+ f_0)
+        else:
+            gi_reescale_aux = T.repeat(gi_reescale, 9)
+            gi_reescale_aux[:3] = 1
 
+            f_0 = (T.sum(
+                 weights[-length_of_U_I:, :] * gi_reescale * gi_reescale_aux[:grade_universal] *
+                 universal_matrix[:grade_universal], axis=0))
 
-        p =  (SED_dips_rest < self.a)
-        o = (SED_dips_rest < self.a)*(  # first derivative
-                -7 * (self.a - SED_dips_rest) ** 3 * SED_dips_rest *
-                (8 * self.a ** 2 + 9 * self.a * SED_dips_rest + 3 * SED_dips_rest ** 2) * 1) /(4 * self.a ** 7)
-        i = (SED_dips_ref < self.a)+0.0000001
-        z = ((  # first derivative
-                -7 * (self.a - SED_dips_ref) ** 3 * SED_dips_ref *
-                (8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * 1) /(4 * self.a ** 7))
-        u = ((SED_dips_ref < self.a)+0.0000001) * ((  # first derivative
-                -7 * (self.a - SED_dips_ref) ** 3 * SED_dips_ref *
-                (8 * self.a ** 2 + 9 * self.a * SED_dips_ref + 3 * SED_dips_ref ** 2) * 1) /(4 * self.a ** 7))
-        """
-        """
+            Z_x = (sigma_0_grad + sigma_0_interf + f_0)
 
         self.interpolate = theano.function(
             [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points,
              i_reescale, gi_reescale],
-            [Z_x, weigths, C_matrix, G_x, G_y, G_z],
-            on_unused_input="warn", profile=True)
+            [Z_x, weights, C_matrix, G_x, G_y, G_z],
+            on_unused_input="warn", profile=False)
 
 
     def theano_set_2D(self):
@@ -1874,3 +1877,61 @@ class Interpolator(GeoPlot):
             [Z_x, DK_parameters, b,
              G_x, G_y, G_z],
             on_unused_input="warn", profile=True, allow_input_downcast=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
