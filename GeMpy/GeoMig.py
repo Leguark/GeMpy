@@ -19,7 +19,7 @@ class Interpolator(GeoPlot):
     """
     Class which contain all needed methods to perform potential field implicit modelling
     """
-    def __init__(self, range_var=6, c_o=-0.58888888, nugget_effect=0.3, u_grade=9):
+    def __init__(self, range_var=False, c_o=False, nugget_effect=0.01, u_grade=9):
         """
         Basic interpolator parameters. Also here it is possible to change some flags of theano
         :param range_var: Range of the variogram, it is recommended the distance of the longest diagonal
@@ -29,6 +29,12 @@ class Interpolator(GeoPlot):
         theano.config.exception_verbosity = 'low'
         theano.config.compute_test_value = 'ignore'
 
+        if not range_var:
+            range_var = np.sqrt((self.xmax-self.xmin)**2 +
+                                (self.ymax-self.ymin)**2 +
+                                (self.zmax-self.zmin)**2)
+        if not c_o:
+            c_o = range_var**2/14/3
         self.a = theano.shared(range_var, "range", allow_downcast=True)
         self.c_o = theano.shared(c_o, "covariance at 0", allow_downcast=True)
         self.nugget_effect_grad = theano.shared(nugget_effect, "nugget effect of the grade", allow_downcast=True)
@@ -71,6 +77,10 @@ class Interpolator(GeoPlot):
                 self.grid[:, 1] * self.grid[:, 2]))
         except AttributeError:
              raise AttributeError("Extent or resolution not provided. Use set_extent and/or set_resolutions first")
+
+    # TODO: Data management using pandas, find an easy way to add values
+
+    # TODO: Once we have the data frame extract data to interpolator
 
     def theano_compilation_3D(self):
         """

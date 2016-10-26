@@ -8,6 +8,9 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="GeMpy_rwth" />
   </component>
+  <component name="PackageRequirementsSettings">
+    <option name="requirementsPath" value="$MODULE_DIR$/requirements.txt" />
+  </component>
   <component name="TestRunnerService">
     <option name="projectConfiguration" value="Nosetests" />
     <option name="PROJECT_TEST_RUNNER" value="Nosetests" />
