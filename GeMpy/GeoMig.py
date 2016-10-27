@@ -11,7 +11,9 @@ Created on 10/10 /2016
 import theano
 import theano.tensor as T
 import numpy as np
-import matplotlib.pyplot as plt
+import sys, os
+import pandas as pn
+#import matplotlib.pyplot as plt
 from Visualization import GeoPlot
 
 
@@ -19,12 +21,14 @@ class Interpolator(GeoPlot):
     """
     Class which contain all needed methods to perform potential field implicit modelling
     """
-    def __init__(self, range_var=False, c_o=False, nugget_effect=0.01, u_grade=9):
+    def __init__(self, range_var=None, c_o=None, nugget_effect=0.01, u_grade=9, rescaling_factor=1):
         """
         Basic interpolator parameters. Also here it is possible to change some flags of theano
         :param range_var: Range of the variogram, it is recommended the distance of the longest diagonal
         :param c_o: Sill of the variogram
         """
+        # TODO: update Docstring
+
         theano.config.optimizer = "fast_run"
         theano.config.exception_verbosity = 'low'
         theano.config.compute_test_value = 'ignore'
@@ -35,13 +39,20 @@ class Interpolator(GeoPlot):
                                 (self.zmax-self.zmin)**2)
         if not c_o:
             c_o = range_var**2/14/3
+
+        # TODO: A function to update this values without calling the init again using .set_value
         self.a = theano.shared(range_var, "range", allow_downcast=True)
         self.c_o = theano.shared(c_o, "covariance at 0", allow_downcast=True)
         self.nugget_effect_grad = theano.shared(nugget_effect, "nugget effect of the grade", allow_downcast=True)
         self.u_grade = theano.shared(u_grade, allow_downcast=True)
+        # TODO: To be sure what is the mathematical meaning of this
+
+        self.rescaling_factor = theano.shared(rescaling_factor, "rescaling factor", allow_downcast=True)
+
 
         # TODO: Assert u_grade is 0,3 or 9
 
+        # TODO: defne instances attribute in init using this parse arguments thing
     def create_regular_grid_2D(self):
         """
         Method to create a 2D regular grid where we interpolate
@@ -82,6 +93,81 @@ class Interpolator(GeoPlot):
 
     # TODO: Once we have the data frame extract data to interpolator
 
+    def load_data_csv(self, data_type, path=os.getcwd()):
+        """
+        Method to load either interface or foliations data csv files. Normally this is in which GeoModeller exports it
+        :param data_type: string, 'interfaces' or 'foliations'
+        :param path: path to the files
+        :return: Pandas framework with the imported data
+        """
+        if data_type == "foliations":
+            self.Foliations = pn.read_csv(path)
+        else:
+            self.Interfaces = pn.read_csv(path)
+
+        try:
+            getattr(self, "formations")
+        except AttributeError:
+            try:
+                # Foliations may or may not be in all formations so we need to use Interfaces
+                self.formations = self.Interfaces["formation"].unique()
+            except AttributeError:
+                pass
+        # TODO: This chunk of code has to go wherever I set the final data
+        if self.rescaling_factor == 1:
+            max_coord = pn.concat([self.Foliations, self.Interfaces]).max()[:3]
+            min_coord = pn.concat([self.Foliations, self.Interfaces]).min()[:3]
+
+            self.rescaling_factor.set_value((np.max(max_coord-min_coord)))
+
+    def set_series(self, series_distribution=None):
+        """
+        The formations have to be separated by this thing! |
+        :param series_distribution:
+        :return:
+        """
+        if series_distribution == None:
+            # TODO: Possibly we have to debug this function
+            self.series = {"Default serie":self.formations}
+
+        else:
+            assert type(series_distribution) is dict, "series_distribution must be a dictionary, see Docstring for more information"
+            # TODO: Fix len(i) when there is only one formtion. Right now it counts the damn letters
+            assert sum(len(i) for i in series_distribution.values()) is len(self.formations), "series_distribution must have the same number of values as number of formations %s." % self.formations
+            self.series = series_distribution
+
+    def compute_potential_field(self, series_name=0):
+        """
+        Compute potential field for the given serie
+        :param series_name: name of the serie. Default first of the list
+        :return: potential field of the serie
+        """
+        if type(series_name) == int:
+            serie = "|".join(list(self.series.keys())[series_name])
+
+        elif type(series_name) == str:
+            serie = "|".join(self.series[series_name])
+        # TODO: I have to translate every entry of series to a single string separeated by |
+
+        dips_position = self.Foliations[self.Foliations["formation"].str.contains(
+            serie)].as_matrix()[:, :3]
+        dip_angles = self.Foliations[self.Foliations["formation"].str.contains(serie)]["dip"].as_matrix()
+        azimuth = self.Foliations[self.Foliations["formation"].str.contains(serie)]["azimuth"].as_matrix()
+        polarity = self.Foliations[self.Foliations["formation"].str.contains(serie)]["polarity"].as_matrix()
+
+        layers = self.Interfaces[self.Interfaces["formation"].str.contains(serie)].as_matrix()[:, :-1]
+
+        if len(self.series[series_name]) == 1:
+            rest_layer_points = layers[:,1]
+            ref_layer_points = np.tile(layers[0], (np.shape(layers)[0]-1,1))
+        else:
+            rest_layer_points = np.vstack((i[1:] for i in layers))
+            ref_layer_points = np.vstack((np.tile(i[0], (np.shape(i)[0]-1,1)) for i in layers))
+
+        self.potential_field, self.G_x, self.G_y, self.G_z = self.interpolate(
+            dips_position, dip_angles, azimuth, polarity,
+            rest_layer_points, ref_layer_points)#, i_reescale, gi_reescale
+
     def theano_compilation_3D(self):
         """
         Function that generates the symbolic code to perform the interpolation
@@ -110,8 +196,8 @@ class Interpolator(GeoPlot):
         length_of_C = length_of_CG + length_of_CGI + length_of_U_I
 
         # Extra parameters
-        i_reescale = T.scalar()
-        gi_reescale = T.scalar()
+        i_reescale = 1/(self.rescaling_factor ** 2)
+        gi_reescale = 1/self.rescaling_factor
 
         # ==========================================
         # Calculation of Cartesian and Euclidian distances
@@ -198,6 +284,13 @@ class Interpolator(GeoPlot):
             (dips_position[:, 2] - ref_layer_points[:, 2].reshape((ref_layer_points[:, 2].shape[0], 1))).T
         )
 
+        # Cartesian distances between reference points and rest
+        hx = T.stack(
+            (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
+            (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
+            (rest_layer_points[:, 2] - ref_layer_points[:, 2])
+        ).T
+
         # Cartesian distances between the point to simulate and the dips
         hu_SimPoint = T.vertical_stack(
             (dips_position[:, 0] - grid_val[:, 0].reshape((grid_val[:, 0].shape[0], 1))).T,
@@ -205,12 +298,7 @@ class Interpolator(GeoPlot):
             (dips_position[:, 2] - grid_val[:, 2].reshape((grid_val[:, 2].shape[0], 1))).T
         )
 
-        # Cartesian distances between reference points and rest
-        hx = T.stack(
-            (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
-            (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
-            (rest_layer_points[:, 2] - ref_layer_points[:, 2])
-        ).T
+
 
         # Perpendicularity matrix. Boolean matrix to separate cross-covariance and
         # every gradient direction covariance
@@ -467,6 +555,7 @@ class Interpolator(GeoPlot):
                7 / 2 * (SED_ref_SimPoint / self.a) ** 5 +
               3 / 4 * (SED_ref_SimPoint / self.a) ** 7)))), axis=0))
 
+        # Potential field
         if self.u_grade.get_value() == 0:
             Z_x = (sigma_0_grad + sigma_0_interf)
 
@@ -481,9 +570,8 @@ class Interpolator(GeoPlot):
             Z_x = (sigma_0_grad + sigma_0_interf + f_0)
 
         self.interpolate = theano.function(
-            [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points,
-             i_reescale, gi_reescale],
-             [Z_x, C_matrix, DK_parameters, G_x, G_y, G_z],
+            [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points],
+             [Z_x, G_x, G_y, G_z, C_matrix, DK_parameters],
             on_unused_input="warn", profile=True, allow_input_downcast=True)
 
     def theano_set_3D_nugget_degree0(self):
