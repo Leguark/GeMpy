@@ -142,14 +142,21 @@ class GeoPlot():
 
 
             # Plotting orientations
-            plt.quiver(self.dips[:, 0], self.dips[:, 2], self.G_x, self.G_z, pivot="tail")
+            plt.quiver(self.dips_position[:, 0], self.dips_position[:, 2], self.G_x, self.G_z, pivot="tail")
 
             # Plotting interfaces
-            for layer in self.layers:
+            if self.layers.ndim == 2:
+                layer = self.layers
                 plt.plot(layer[:, 0], layer[:, 2], "o")
 
                 if "linear_interpolation" in kwargs:
                     plt.plot(layer[:, 0], layer[:, 2])
+            else:
+                for layer in self.layers:
+                    plt.plot(layer[:, 0], layer[:, 2], "o")
+
+                    if "linear_interpolation" in kwargs:
+                        plt.plot(layer[:, 0], layer[:, 2])
 
             # Plotting potential field if is calculated
             if hasattr(self, 'potential_field'):

@@ -89,6 +89,9 @@ class Interpolator(GeoPlot):
         except AttributeError:
              raise AttributeError("Extent or resolution not provided. Use set_extent and/or set_resolutions first")
 
+        # TODO Update shared value
+        self.grid_val = theano.shared(self.grid, "Positions of the points to interpolate")
+        self.universal_matrix = theano.shared(self._universal_matrix, "universal matrix")
     # TODO: Data management using pandas, find an easy way to add values
 
     # TODO: Once we have the data frame extract data to interpolator
@@ -132,8 +135,7 @@ class Interpolator(GeoPlot):
 
         else:
             assert type(series_distribution) is dict, "series_distribution must be a dictionary, see Docstring for more information"
-            # TODO: Fix len(i) when there is only one formtion. Right now it counts the damn letters
-            assert sum(len(i) for i in series_distribution.values()) is len(self.formations), "series_distribution must have the same number of values as number of formations %s." % self.formations
+            assert sum(np.shape([i])[-1] for i in series_distribution.values()) is len(self.formations), "series_distribution must have the same number of values as number of formations %s." % self.formations
             self.series = series_distribution
 
     def compute_potential_field(self, series_name=0):
@@ -142,31 +144,38 @@ class Interpolator(GeoPlot):
         :param series_name: name of the serie. Default first of the list
         :return: potential field of the serie
         """
+        # I hate dictionaries
         if type(series_name) == int:
-            serie = "|".join(list(self.series.keys())[series_name])
+            if np.shape([list(self.series.values())[series_name]])[-1] > 1:
+                serie = "|".join(list(self.series.values())[series_name])
+            else:
+                serie = list(self.series.values())[series_name]
 
         elif type(series_name) == str:
-            serie = "|".join(self.series[series_name])
-        # TODO: I have to translate every entry of series to a single string separeated by |
+            if np.shape([self.series[series_name]])[-1] > 1:
+                serie = "|".join(self.series[series_name])
+            else:
+                serie = self.series[series_name]
 
-        dips_position = self.Foliations[self.Foliations["formation"].str.contains(
-            serie)].as_matrix()[:, :3]
-        dip_angles = self.Foliations[self.Foliations["formation"].str.contains(serie)]["dip"].as_matrix()
-        azimuth = self.Foliations[self.Foliations["formation"].str.contains(serie)]["azimuth"].as_matrix()
-        polarity = self.Foliations[self.Foliations["formation"].str.contains(serie)]["polarity"].as_matrix()
+        self.dips_position = self.Foliations[self.Foliations["formation"].str.contains(serie)].as_matrix()[:, :3]
+        self.dip_angles = self.Foliations[self.Foliations["formation"].str.contains(serie)]["dip"].as_matrix()
+        self.azimuth = self.Foliations[self.Foliations["formation"].str.contains(serie)]["azimuth"].as_matrix()
+        self.polarity = self.Foliations[self.Foliations["formation"].str.contains(serie)]["polarity"].as_matrix()
 
-        layers = self.Interfaces[self.Interfaces["formation"].str.contains(serie)].as_matrix()[:, :-1]
+        self.layers = self.Interfaces[self.Interfaces["formation"].str.contains(serie)].as_matrix()[:, :-1]
 
-        if len(self.series[series_name]) == 1:
-            rest_layer_points = layers[:,1]
-            ref_layer_points = np.tile(layers[0], (np.shape(layers)[0]-1,1))
+        if np.shape([serie])[-1] == 1:
+            rest_layer_points = self.layers[1:]
+            ref_layer_points = np.tile(self.layers[0], (np.shape(self.layers)[0]-1, 1))
         else:
-            rest_layer_points = np.vstack((i[1:] for i in layers))
-            ref_layer_points = np.vstack((np.tile(i[0], (np.shape(i)[0]-1,1)) for i in layers))
+            rest_layer_points = np.vstack((i[1:] for i in self.layers))
+            ref_layer_points = np.vstack((np.tile(i[0], (np.shape(i)[0]-1, 1)) for i in self.layers))
 
-        self.potential_field, self.G_x, self.G_y, self.G_z = self.interpolate(
-            dips_position, dip_angles, azimuth, polarity,
-            rest_layer_points, ref_layer_points)#, i_reescale, gi_reescale
+        self.Z_x, self.G_x, self.G_y, self.G_z = self.interpolate(
+            self.dips_position, self.dip_angles, self.azimuth, self.polarity,
+            rest_layer_points, ref_layer_points)[:4]#, i_reescale, gi_reescale
+
+        self.potential_field = np.swapaxes(self.Z_x.reshape(self.nx, self.ny, self.nz),0,1)
 
     def theano_compilation_3D(self):
         """
@@ -182,8 +191,7 @@ class Interpolator(GeoPlot):
         polarity = T.vector("Polarity")
         ref_layer_points = T.matrix("Reference points for every layer")
         rest_layer_points = T.matrix("Rest of the points of the layers")
-        grid_val = theano.shared(self.grid, "Positions of the points to interpolate")
-        universal_matrix = theano.shared(self._universal_matrix, "universal matrix")
+
 
         # Init values
         n_dimensions = 3
@@ -207,7 +215,7 @@ class Interpolator(GeoPlot):
         _aux_dips_pos = T.tile(dips_position, (n_dimensions, 1)).astype("float64")
         _aux_rest_layer_points = rest_layer_points.astype("float64")
         _aux_ref_layer_points = ref_layer_points.astype("float64")
-        _aux_grid_val = grid_val.astype("float64")
+        _aux_grid_val = self.grid_val.astype("float64")
 
         # Calculation of euclidian distances giving back float32
         SED_rest_rest = (T.sqrt(
@@ -293,9 +301,9 @@ class Interpolator(GeoPlot):
 
         # Cartesian distances between the point to simulate and the dips
         hu_SimPoint = T.vertical_stack(
-            (dips_position[:, 0] - grid_val[:, 0].reshape((grid_val[:, 0].shape[0], 1))).T,
-            (dips_position[:, 1] - grid_val[:, 1].reshape((grid_val[:, 1].shape[0], 1))).T,
-            (dips_position[:, 2] - grid_val[:, 2].reshape((grid_val[:, 2].shape[0], 1))).T
+            (dips_position[:, 0] - self.grid_val[:, 0].reshape((self.grid_val[:, 0].shape[0], 1))).T,
+            (dips_position[:, 1] - self.grid_val[:, 1].reshape((self.grid_val[:, 1].shape[0], 1))).T,
+            (dips_position[:, 2] - self.grid_val[:, 2].reshape((self.grid_val[:, 2].shape[0], 1))).T
         )
 
 
@@ -527,7 +535,7 @@ class Interpolator(GeoPlot):
 
         # Creation of a matrix of dimensions equal to the grid with the weights for every point (big 4D matrix in
         # ravel form)
-        weights = T.tile(DK_parameters, (grid_val.shape[0], 1)).T
+        weights = T.tile(DK_parameters, (self.grid_val.shape[0], 1)).T
 
         # Gradient contribution
         sigma_0_grad = T.sum(
@@ -562,10 +570,10 @@ class Interpolator(GeoPlot):
         else:
             gi_rescale_aux = T.repeat(gi_reescale, 9)
             gi_rescale_aux = T.set_subtensor(gi_rescale_aux[:3], 1)
-            na = T.tile(gi_rescale_aux[:grade_universal], (grid_val.shape[0], 1)).T
+            na = T.tile(gi_rescale_aux[:grade_universal], (self.grid_val.shape[0], 1)).T
             f_0 = (T.sum(
                  weights[-length_of_U_I:, :] * gi_reescale * na *
-                 universal_matrix[:grade_universal], axis=0))
+                 self.universal_matrix[:grade_universal], axis=0))
 
             Z_x = (sigma_0_grad + sigma_0_interf + f_0)
 
