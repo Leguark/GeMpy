@@ -108,14 +108,26 @@ class Interpolator(GeoPlot):
         else:
             self.Interfaces = pn.read_csv(path)
 
+
         try:
             getattr(self, "formations")
         except AttributeError:
             try:
                 # Foliations may or may not be in all formations so we need to use Interfaces
                 self.formations = self.Interfaces["formation"].unique()
+
+                # TODO: Trying to make this more elegant?
+                for el in self.formations:
+                    for check in self.formations:
+                        assert (el not in check or el == check), "One of the formations name contains other sting. Please rename."+str(el)+" in "+str(check)
+
+                # TODO: Add the possibility to change the name in pandas directly (adding just a 1 in the contained string)
+
             except AttributeError:
                 pass
+
+
+
         # TODO: This chunk of code has to go wherever I set the final data
         if self.rescaling_factor == 1:
             max_coord = pn.concat([self.Foliations, self.Interfaces]).max()[:3]
@@ -138,7 +150,7 @@ class Interpolator(GeoPlot):
             assert sum(np.shape([i])[-1] for i in series_distribution.values()) is len(self.formations), "series_distribution must have the same number of values as number of formations %s." % self.formations
             self.series = series_distribution
 
-    def compute_potential_field(self, series_name=0):
+    def compute_potential_field(self, series_name=0, verbose =0):
         """
         Compute potential field for the given serie
         :param series_name: name of the serie. Default first of the list
@@ -170,6 +182,13 @@ class Interpolator(GeoPlot):
         else:
             rest_layer_points = np.vstack((i[1:] for i in self.layers))
             ref_layer_points = np.vstack((np.tile(i[0], (np.shape(i)[0]-1, 1)) for i in self.layers))
+
+        if verbose > 0:
+            print("The serie formations are %s" % serie)
+            if verbose > 1:
+                print("The formations are: \n"
+                      "Layers ", self.Interfaces[self.Interfaces["formation"].str.contains(serie)], " \n "
+                      "Foliations ", self.Foliations[self.Foliations["formation"].str.contains(serie)])
 
         self.Z_x, self.G_x, self.G_y, self.G_z = self.interpolate(
             self.dips_position, self.dip_angles, self.azimuth, self.polarity,
