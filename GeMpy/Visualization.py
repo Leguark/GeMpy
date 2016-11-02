@@ -109,6 +109,7 @@ class GeoPlot():
         figsize = kwargs.get('figsize', (8, 4))
         geomod_coord = kwargs.get('geomod_coord', False)
         contour = kwargs.get('contour', False)
+        contour_lines = kwargs.get('contour_lines', 10)
         linewidth = kwargs.get("linewidth", 1)
         levels = kwargs.get("plot_layer", None)
         kwargs.get("linear_interpolation", False)
@@ -162,7 +163,7 @@ class GeoPlot():
             if hasattr(self, 'potential_field'):
                 grid_slice = self.potential_field[pos, :, :]
                 grid_slice = grid_slice.transpose()
-                plt.contour(grid_slice, 10, extent=(self.xmin, self.xmax, self.zmin, self.zmax))
+                plt.contour(grid_slice, contour_lines, extent=(self.xmin, self.xmax, self.zmin, self.zmax), **kwargs)
                 if colorbar:
                     plt.colorbar()
             # General plot settings

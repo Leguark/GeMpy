@@ -126,14 +126,15 @@ class Interpolator(GeoPlot):
             except AttributeError:
                 pass
 
+            # TODO IMPORTANT: Decide if I calculate it once or not
+        try:
+            if self.rescaling_factor.get_value() == 1:
+                max_coord = pn.concat([self.Foliations, self.Interfaces]).max()[:3]
+                min_coord = pn.concat([self.Foliations, self.Interfaces]).min()[:3]
 
-
-        # TODO: This chunk of code has to go wherever I set the final data
-        if self.rescaling_factor == 1:
-            max_coord = pn.concat([self.Foliations, self.Interfaces]).max()[:3]
-            min_coord = pn.concat([self.Foliations, self.Interfaces]).min()[:3]
-
-            self.rescaling_factor.set_value((np.max(max_coord-min_coord)))
+                self.rescaling_factor.set_value((np.max(max_coord - min_coord)))
+        except AttributeError:
+            pass
 
     def set_series(self, series_distribution=None):
         """
@@ -174,12 +175,20 @@ class Interpolator(GeoPlot):
         self.azimuth = self.Foliations[self.Foliations["formation"].str.contains(serie)]["azimuth"].as_matrix()
         self.polarity = self.Foliations[self.Foliations["formation"].str.contains(serie)]["polarity"].as_matrix()
 
-        self.layers = self.Interfaces[self.Interfaces["formation"].str.contains(serie)].as_matrix()[:, :-1]
 
-        if np.shape([serie])[-1] == 1:
+
+        if np.shape([self.series[series_name]])[-1]  == 1:
+            print("I am in 1")
+            self.layers = self.Interfaces[self.Interfaces["formation"].str.contains(serie)].as_matrix()[:, :-1]
             rest_layer_points = self.layers[1:]
             ref_layer_points = np.tile(self.layers[0], (np.shape(self.layers)[0]-1, 1))
         else:
+            print("I am in 2")
+            # TODO: This is ugly
+            layers_list = []
+            for formation in self.series[series_name]:
+                layers_list.append(self.Interfaces[self.Interfaces["formation"] == formation].as_matrix()[:, :-1])
+            self.layers = np.asarray(layers_list)
             rest_layer_points = np.vstack((i[1:] for i in self.layers))
             ref_layer_points = np.vstack((np.tile(i[0], (np.shape(i)[0]-1, 1)) for i in self.layers))
 
@@ -190,9 +199,9 @@ class Interpolator(GeoPlot):
                       "Layers ", self.Interfaces[self.Interfaces["formation"].str.contains(serie)], " \n "
                       "Foliations ", self.Foliations[self.Foliations["formation"].str.contains(serie)])
 
-        self.Z_x, self.G_x, self.G_y, self.G_z = self.interpolate(
+        self.Z_x, self.G_x, self.G_y, self.G_z, self.C, self.DK = self.interpolate(
             self.dips_position, self.dip_angles, self.azimuth, self.polarity,
-            rest_layer_points, ref_layer_points)[:4]#, i_reescale, gi_reescale
+            rest_layer_points, ref_layer_points)[:]#, i_reescale, gi_reescale
 
         self.potential_field = np.swapaxes(self.Z_x.reshape(self.nx, self.ny, self.nz),0,1)
 
@@ -226,6 +235,7 @@ class Interpolator(GeoPlot):
         i_reescale = 1/(self.rescaling_factor ** 2)
         gi_reescale = 1/self.rescaling_factor
 
+        # TODO: Check that the distances does not go nuts when I use too large numbers
         # ==========================================
         # Calculation of Cartesian and Euclidian distances
         # ===========================================
