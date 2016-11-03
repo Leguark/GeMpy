@@ -199,42 +199,47 @@ class Interpolator(GeoPlot):
                       "Layers ", self.Interfaces[self.Interfaces["formation"].str.contains(serie)], " \n "
                       "Foliations ", self.Foliations[self.Foliations["formation"].str.contains(serie)])
 
-        self.Z_x, self.G_x, self.G_y, self.G_z, self.C, self.DK = self.interpolate(
+        self.Z_x, self.G_x, self.G_y, self.G_z, self.potential_value, self.C, self.DK = self.interpolate(
             self.dips_position, self.dip_angles, self.azimuth, self.polarity,
-            rest_layer_points, ref_layer_points)[:]#, i_reescale, gi_reescale
+            rest_layer_points, ref_layer_points)[:]
 
         self.potential_field = np.swapaxes(self.Z_x.reshape(self.nx, self.ny, self.nz),0,1)
 
         # Check the values of the potential field in the interfaces. TODO add this in the theano function
-        self.potenetial_value = np.empty()
+     #   self.potential_value = np.empty(0)
 
-        if verbose > 3:
-            if np.shape([self.series[series_name]])[-1] == 1:
-                la = self.layers
-                dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
-                               (la ** 2).sum(1).reshape((1, la.shape[0])) -
-                               2 * self.grid.dot(la.T))
-                self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
-                print("The potential field value for all the points of the layer %r are %r"
-                      % (serie, self.Z_x[dist.argmin(axis=1)]))
-
-            else:
-                for la in self.layers:
-                    dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
-                                   (la ** 2).sum(1).reshape((1, la.shape[0])) -
-                                   2 * self.grid.dot(la.T))
-                    self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
-                    print("The potential field value for all the points of the layer %r are %r"
-                          % (serie, self.Z_x[dist.argmin(axis=1)]))
-        else:
-            if np.shape([self.series[series_name]])[-1] == 1:
-                la = self.layers[0]
-                dist = (abs(self.grid-la))
-                self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
-            else:
-                for la in self.layers:
-                    dist = (abs(self.grid-la[0]))
-                    self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
+        # if verbose:
+        #     if np.shape([self.series[series_name]])[-1] == 1:
+        #         la = self.layers.astype("float")
+        #         dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
+        #                        (la ** 2).sum(1).reshape((1, la.shape[0])) -
+        #                        2 * self.grid.dot(la.T))
+        #         self.potential_value = np.append(self.potential_value, self.Z_x[dist.argmin(1)].mean())
+        #         print("The potential field value for all the points of the layer %r are %r"
+        #               % (serie, self.Z_x[dist.argmin(axis=1)]))
+        #
+        #     else:
+        #         for la in self.layers:
+        #             la = la.astype("float")
+        #             dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
+        #                            (la ** 2).sum(1).reshape((1, la.shape[0])) -
+        #                            2 * self.grid.dot(la.T))
+        #             self.potential_value = np.append(self.potential_value, self.Z_x[dist.argmin(1)].mean())
+        #             print("The potential field value for all the points of the layer %r are %r"
+        #                   % (serie, self.Z_x[dist.argmin(axis=1)]))
+        # else:
+        #     if np.shape([self.series[series_name]])[-1] == 1:
+        #         la = np.asarray(self.layers[0])
+        #         dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
+        #                        (la ** 2).sum() -
+        #                        2 * self.grid.dot(la))
+        #         self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
+        #     else:
+        #         for la in self.layers:
+        #             dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
+        #                            (la[0] ** 2).sum(1).reshape((1, la[0].shape[0])) -
+        #                            2 * self.grid.dot(la[0].T))
+        #             self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
 
 
     def theano_compilation_3D(self):
@@ -276,6 +281,19 @@ class Interpolator(GeoPlot):
         _aux_dips_pos = T.tile(dips_position, (n_dimensions, 1)).astype("float64")
         _aux_rest_layer_points = rest_layer_points.astype("float64")
         _aux_ref_layer_points = ref_layer_points.astype("float64")
+
+        # This thing is the addition to simulate also the layer points
+        self.grid_val = T.horizontal_stack(self.grid_val, rest_layer_points)
+
+        universal_terms_layers = T.stack(
+            (rest_layer_points.T,
+                                    (rest_layer_points ** 2).T,
+                                    rest_layer_points[:, 0] * rest_layer_points[:, 1],
+                                    rest_layer_points[:, 0] * rest_layer_points[:, 2],
+                                    rest_layer_points[:, 1] * rest_layer_points[:, 2]), axis = 1)
+
+        self.universal_matrix = T.horizontal_stack(self.universal_matrix, universal_terms_layers)
+
         _aux_grid_val = self.grid_val.astype("float64")
 
         # Calculation of euclidian distances giving back float32
@@ -636,11 +654,11 @@ class Interpolator(GeoPlot):
                  weights[-length_of_U_I:, :] * gi_reescale * na *
                  self.universal_matrix[:grade_universal], axis=0))
 
-            Z_x = (sigma_0_grad + sigma_0_interf + f_0)
-
+            Z_x = (sigma_0_grad + sigma_0_interf + f_0)[:-rest_layer_points.shape[0]]
+            potential_field_interfaces = (sigma_0_grad + sigma_0_interf + f_0)[-rest_layer_points.shape[0]:]
         self.interpolate = theano.function(
             [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points],
-             [Z_x, G_x, G_y, G_z, C_matrix, DK_parameters],
+             [Z_x, G_x, G_y, G_z, potential_field_interfaces, C_matrix, DK_parameters],
             on_unused_input="warn", profile=True, allow_input_downcast=True)
 
     def theano_set_3D_nugget_degree0(self):
