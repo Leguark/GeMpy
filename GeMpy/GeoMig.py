@@ -205,6 +205,38 @@ class Interpolator(GeoPlot):
 
         self.potential_field = np.swapaxes(self.Z_x.reshape(self.nx, self.ny, self.nz),0,1)
 
+        # Check the values of the potential field in the interfaces. TODO add this in the theano function
+        self.potenetial_value = np.empty()
+
+        if verbose > 3:
+            if np.shape([self.series[series_name]])[-1] == 1:
+                la = self.layers
+                dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
+                               (la ** 2).sum(1).reshape((1, la.shape[0])) -
+                               2 * self.grid.dot(la.T))
+                self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
+                print("The potential field value for all the points of the layer %r are %r"
+                      % (serie, self.Z_x[dist.argmin(axis=1)]))
+
+            else:
+                for la in self.layers:
+                    dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
+                                   (la ** 2).sum(1).reshape((1, la.shape[0])) -
+                                   2 * self.grid.dot(la.T))
+                    self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
+                    print("The potential field value for all the points of the layer %r are %r"
+                          % (serie, self.Z_x[dist.argmin(axis=1)]))
+        else:
+            if np.shape([self.series[series_name]])[-1] == 1:
+                la = self.layers[0]
+                dist = (abs(self.grid-la))
+                self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
+            else:
+                for la in self.layers:
+                    dist = (abs(self.grid-la[0]))
+                    self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
+
+
     def theano_compilation_3D(self):
         """
         Function that generates the symbolic code to perform the interpolation
