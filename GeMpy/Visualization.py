@@ -161,7 +161,7 @@ class GeoPlot():
 
             # Plotting potential field if is calculated
             if hasattr(self, 'potential_field'):
-                grid_slice = self.potential_field[pos, :, :]
+                grid_slice = self.potential_field[:, pos, :]
                 grid_slice = grid_slice.transpose()
                 plt.contour(grid_slice, contour_lines, extent=(self.xmin, self.xmax, self.zmin, self.zmax), **kwargs)
                 if colorbar:

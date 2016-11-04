@@ -178,12 +178,12 @@ class Interpolator(GeoPlot):
 
 
         if np.shape([self.series[series_name]])[-1]  == 1:
-            print("I am in 1")
+
             self.layers = self.Interfaces[self.Interfaces["formation"].str.contains(serie)].as_matrix()[:, :-1]
             rest_layer_points = self.layers[1:]
             ref_layer_points = np.tile(self.layers[0], (np.shape(self.layers)[0]-1, 1))
         else:
-            print("I am in 2")
+
             # TODO: This is ugly
             layers_list = []
             for formation in self.series[series_name]:
@@ -203,7 +203,8 @@ class Interpolator(GeoPlot):
             self.dips_position, self.dip_angles, self.azimuth, self.polarity,
             rest_layer_points, ref_layer_points)[:]
 
-        self.potential_field = np.swapaxes(self.Z_x.reshape(self.nx, self.ny, self.nz),0,1)
+    #    self.potential_field = np.swapaxes(self.Z_x.reshape(self.nx, self.ny, self.nz), 0, 1)
+        self.potential_field = self.Z_x.reshape(self.nx, self.ny, self.nz)
     def theano_compilation_3D(self):
         """
         Function that generates the symbolic code to perform the interpolation
