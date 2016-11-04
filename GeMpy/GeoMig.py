@@ -199,49 +199,11 @@ class Interpolator(GeoPlot):
                       "Layers ", self.Interfaces[self.Interfaces["formation"].str.contains(serie)], " \n "
                       "Foliations ", self.Foliations[self.Foliations["formation"].str.contains(serie)])
 
-        self.Z_x, self.G_x, self.G_y, self.G_z, self.potential_value, self.C, self.DK = self.interpolate(
+        self.Z_x, self.G_x, self.G_y, self.G_z, self.potential_interfaces, self.C, self.DK = self.interpolate(
             self.dips_position, self.dip_angles, self.azimuth, self.polarity,
             rest_layer_points, ref_layer_points)[:]
 
         self.potential_field = np.swapaxes(self.Z_x.reshape(self.nx, self.ny, self.nz),0,1)
-
-        # Check the values of the potential field in the interfaces. TODO add this in the theano function
-     #   self.potential_value = np.empty(0)
-
-        # if verbose:
-        #     if np.shape([self.series[series_name]])[-1] == 1:
-        #         la = self.layers.astype("float")
-        #         dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
-        #                        (la ** 2).sum(1).reshape((1, la.shape[0])) -
-        #                        2 * self.grid.dot(la.T))
-        #         self.potential_value = np.append(self.potential_value, self.Z_x[dist.argmin(1)].mean())
-        #         print("The potential field value for all the points of the layer %r are %r"
-        #               % (serie, self.Z_x[dist.argmin(axis=1)]))
-        #
-        #     else:
-        #         for la in self.layers:
-        #             la = la.astype("float")
-        #             dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
-        #                            (la ** 2).sum(1).reshape((1, la.shape[0])) -
-        #                            2 * self.grid.dot(la.T))
-        #             self.potential_value = np.append(self.potential_value, self.Z_x[dist.argmin(1)].mean())
-        #             print("The potential field value for all the points of the layer %r are %r"
-        #                   % (serie, self.Z_x[dist.argmin(axis=1)]))
-        # else:
-        #     if np.shape([self.series[series_name]])[-1] == 1:
-        #         la = np.asarray(self.layers[0])
-        #         dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
-        #                        (la ** 2).sum() -
-        #                        2 * self.grid.dot(la))
-        #         self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
-        #     else:
-        #         for la in self.layers:
-        #             dist = np.sqrt((self.grid ** 2).sum(1).reshape((self.grid.shape[0], 1)) +
-        #                            (la[0] ** 2).sum(1).reshape((1, la[0].shape[0])) -
-        #                            2 * self.grid.dot(la[0].T))
-        #             self.potenetial_value = np.append(self.potenetial_value, self.Z_x[dist.argmin()])
-
-
     def theano_compilation_3D(self):
         """
         Function that generates the symbolic code to perform the interpolation
@@ -257,7 +219,6 @@ class Interpolator(GeoPlot):
         ref_layer_points = T.matrix("Reference points for every layer")
         rest_layer_points = T.matrix("Rest of the points of the layers")
 
-
         # Init values
         n_dimensions = 3
         grade_universal = self.u_grade
@@ -269,8 +230,8 @@ class Interpolator(GeoPlot):
         length_of_C = length_of_CG + length_of_CGI + length_of_U_I
 
         # Extra parameters
-        i_reescale = 1/(self.rescaling_factor ** 2)
-        gi_reescale = 1/self.rescaling_factor
+        i_reescale = 1 / (self.rescaling_factor ** 2)
+        gi_reescale = 1 / self.rescaling_factor
 
         # TODO: Check that the distances does not go nuts when I use too large numbers
         # ==========================================
@@ -283,18 +244,19 @@ class Interpolator(GeoPlot):
         _aux_ref_layer_points = ref_layer_points.astype("float64")
 
         # This thing is the addition to simulate also the layer points
-        self.grid_val = T.horizontal_stack(self.grid_val, rest_layer_points)
+        grid_val = T.vertical_stack(self.grid_val, rest_layer_points)
 
-        universal_terms_layers = T.stack(
-            (rest_layer_points.T,
-                                    (rest_layer_points ** 2).T,
-                                    rest_layer_points[:, 0] * rest_layer_points[:, 1],
-                                    rest_layer_points[:, 0] * rest_layer_points[:, 2],
-                                    rest_layer_points[:, 1] * rest_layer_points[:, 2]), axis = 1)
+        universal_terms_layers = T.horizontal_stack(
+                rest_layer_points,
+                (rest_layer_points ** 2),
+                T.stack((rest_layer_points[:, 0] * rest_layer_points[:, 1],
+                rest_layer_points[:, 0] * rest_layer_points[:, 2],
+                rest_layer_points[:, 1] * rest_layer_points[:, 2]), axis=1)).T
 
-        self.universal_matrix = T.horizontal_stack(self.universal_matrix, universal_terms_layers)
+        universal_matrix = T.horizontal_stack(self.universal_matrix, universal_terms_layers)
 
-        _aux_grid_val = self.grid_val.astype("float64")
+
+        _aux_grid_val = grid_val.astype("float64")
 
         # Calculation of euclidian distances giving back float32
         SED_rest_rest = (T.sqrt(
@@ -380,12 +342,10 @@ class Interpolator(GeoPlot):
 
         # Cartesian distances between the point to simulate and the dips
         hu_SimPoint = T.vertical_stack(
-            (dips_position[:, 0] - self.grid_val[:, 0].reshape((self.grid_val[:, 0].shape[0], 1))).T,
-            (dips_position[:, 1] - self.grid_val[:, 1].reshape((self.grid_val[:, 1].shape[0], 1))).T,
-            (dips_position[:, 2] - self.grid_val[:, 2].reshape((self.grid_val[:, 2].shape[0], 1))).T
+            (dips_position[:, 0] - grid_val[:, 0].reshape((grid_val[:, 0].shape[0], 1))).T,
+            (dips_position[:, 1] - grid_val[:, 1].reshape((grid_val[:, 1].shape[0], 1))).T,
+            (dips_position[:, 2] - grid_val[:, 2].reshape((grid_val[:, 2].shape[0], 1))).T
         )
-
-
 
         # Perpendicularity matrix. Boolean matrix to separate cross-covariance and
         # every gradient direction covariance
@@ -410,48 +370,48 @@ class Interpolator(GeoPlot):
         # ==========================
         # Covariance matrix for interfaces
         C_I = (self.c_o * i_reescale * (
-               (SED_rest_rest < self.a) *              # Rest - Rest Covariances Matrix
-               (1 - 7 * (SED_rest_rest / self.a) ** 2 +
-                35 / 4 * (SED_rest_rest / self.a) ** 3 -
-                7 / 2 * (SED_rest_rest / self.a) ** 5 +
-                3 / 4 * (SED_rest_rest / self.a) ** 7) -
-               ((SED_ref_rest < self.a) *              # Reference - Rest
-                (1 - 7 * (SED_ref_rest / self.a) ** 2 +
-                35 / 4 * (SED_ref_rest / self.a) ** 3 -
-                7 / 2 * (SED_ref_rest / self.a) ** 5 +
-                3 / 4 * (SED_ref_rest / self.a) ** 7)) -
-               ((SED_rest_ref < self.a) *             # Rest - Reference
-                (1 - 7 * (SED_rest_ref / self.a) ** 2 +
-                35 / 4 * (SED_rest_ref / self.a) ** 3 -
-                7 / 2 * (SED_rest_ref / self.a) ** 5 +
-                3 / 4 * (SED_rest_ref / self.a) ** 7)) +
-               ((SED_ref_ref < self.a) *             # Reference - References
-                (1 - 7 * (SED_ref_ref / self.a) ** 2 +
-                35 / 4 * (SED_ref_ref / self.a) ** 3 -
-                7 / 2 * (SED_ref_ref / self.a) ** 5 +
-                3 / 4 * (SED_ref_ref / self.a) ** 7)))) + 10e-9
+            (SED_rest_rest < self.a) *  # Rest - Rest Covariances Matrix
+            (1 - 7 * (SED_rest_rest / self.a) ** 2 +
+             35 / 4 * (SED_rest_rest / self.a) ** 3 -
+             7 / 2 * (SED_rest_rest / self.a) ** 5 +
+             3 / 4 * (SED_rest_rest / self.a) ** 7) -
+            ((SED_ref_rest < self.a) *  # Reference - Rest
+             (1 - 7 * (SED_ref_rest / self.a) ** 2 +
+              35 / 4 * (SED_ref_rest / self.a) ** 3 -
+              7 / 2 * (SED_ref_rest / self.a) ** 5 +
+              3 / 4 * (SED_ref_rest / self.a) ** 7)) -
+            ((SED_rest_ref < self.a) *  # Rest - Reference
+             (1 - 7 * (SED_rest_ref / self.a) ** 2 +
+              35 / 4 * (SED_rest_ref / self.a) ** 3 -
+              7 / 2 * (SED_rest_ref / self.a) ** 5 +
+              3 / 4 * (SED_rest_ref / self.a) ** 7)) +
+            ((SED_ref_ref < self.a) *  # Reference - References
+             (1 - 7 * (SED_ref_ref / self.a) ** 2 +
+              35 / 4 * (SED_ref_ref / self.a) ** 3 -
+              7 / 2 * (SED_ref_ref / self.a) ** 5 +
+              3 / 4 * (SED_ref_ref / self.a) ** 7)))) + 10e-9
 
         # Covariance matrix for gradients at every xyz direction and their cross-covariances
         C_G = T.switch(
             T.eq(SED_dips_dips, 0),  # This is the condition
-            0,                       # If true it is equal to 0. This is how a direction affect another
-            (                        # else, following Chiles book
-             (h_u * h_v / SED_dips_dips ** 2) *
-             ((
-              (SED_dips_dips < self.a) *  # first derivative
-              (-self.c_o * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_dips / self.a ** 3 -
-                            35 / 2 * SED_dips_dips ** 3 / self.a ** 5 + 21 / 4 * SED_dips_dips ** 5 / self.a ** 7))) +
-              (SED_dips_dips < self.a) *  # Second derivative
-              self.c_o * 7 * (9 * SED_dips_dips ** 5 - 20 * self.a ** 2 * SED_dips_dips ** 3 +
-                              15 * self.a ** 4 * SED_dips_dips - 4 * self.a ** 5) / (2 * self.a ** 7)) -
-             (perpendicularity_matrix *
-              (SED_dips_dips < self.a) *  # first derivative
-              self.c_o * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_dips / self.a ** 3 -
-                          35 / 2 * SED_dips_dips ** 3 / self.a ** 5 + 21 / 4 * SED_dips_dips ** 5 / self.a ** 7)))
+            0,  # If true it is equal to 0. This is how a direction affect another
+            (  # else, following Chiles book
+                (h_u * h_v / SED_dips_dips ** 2) *
+                ((
+                     (SED_dips_dips < self.a) *  # first derivative
+                     (-self.c_o * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_dips / self.a ** 3 -
+                                   35 / 2 * SED_dips_dips ** 3 / self.a ** 5 + 21 / 4 * SED_dips_dips ** 5 / self.a ** 7))) +
+                 (SED_dips_dips < self.a) *  # Second derivative
+                 self.c_o * 7 * (9 * SED_dips_dips ** 5 - 20 * self.a ** 2 * SED_dips_dips ** 3 +
+                                 15 * self.a ** 4 * SED_dips_dips - 4 * self.a ** 5) / (2 * self.a ** 7)) -
+                (perpendicularity_matrix *
+                 (SED_dips_dips < self.a) *  # first derivative
+                 self.c_o * ((-14 / self.a ** 2) + 105 / 4 * SED_dips_dips / self.a ** 3 -
+                             35 / 2 * SED_dips_dips ** 3 / self.a ** 5 + 21 / 4 * SED_dips_dips ** 5 / self.a ** 7)))
         )
 
         # Setting nugget effect of the gradients
-        C_G = T.fill_diagonal(C_G, -self.c_o * (-14/self.a**2) + self.nugget_effect_grad)
+        C_G = T.fill_diagonal(C_G, -self.c_o * (-14 / self.a ** 2) + self.nugget_effect_grad)
 
         # Cross-Covariance gradients-interfaces
         C_GI = gi_reescale * (
@@ -485,7 +445,7 @@ class Interpolator(GeoPlot):
             )
 
             # Interface
-            U_I = -hx*gi_reescale
+            U_I = -hx * gi_reescale
 
         elif self.u_grade.get_value() == 9:
             # ==========================
@@ -507,7 +467,7 @@ class Interpolator(GeoPlot):
             )
             # x**2
             U_G = T.set_subtensor(
-                U_G[:n, 3], 2 * gi_reescale * dips_position[:,0]
+                U_G[:n, 3], 2 * gi_reescale * dips_position[:, 0]
             )
             # y**2
             U_G = T.set_subtensor(
@@ -519,7 +479,7 @@ class Interpolator(GeoPlot):
             )
             # xy
             U_G = T.set_subtensor(
-                U_G[:n, 6], gi_reescale * dips_position[:, 1] # This is y
+                U_G[:n, 6], gi_reescale * dips_position[:, 1]  # This is y
             )
 
             U_G = T.set_subtensor(
@@ -540,24 +500,26 @@ class Interpolator(GeoPlot):
                 U_G[n * 1:n * 2, 8], gi_reescale * dips_position[:, 2]  # This is z
             )
 
-
             U_G = T.set_subtensor(
                 U_G[n * 2:n * 3, 8], gi_reescale * dips_position[:, 1]  # This is y
             )
 
-            U_G =  U_G
+            U_G = U_G
             # Interface
 
             U_I = - T.stack(
                 gi_reescale * (rest_layer_points[:, 0] - ref_layer_points[:, 0]),
                 gi_reescale * (rest_layer_points[:, 1] - ref_layer_points[:, 1]),
                 gi_reescale * (rest_layer_points[:, 2] - ref_layer_points[:, 2]),
-                gi_reescale ** 2 * (rest_layer_points[:, 0]**2 - ref_layer_points[:, 0]**2),
-                gi_reescale ** 2* (rest_layer_points[:, 1]**2 - ref_layer_points[:, 1]**2),
-                gi_reescale ** 2* (rest_layer_points[:, 2]**2 - ref_layer_points[:, 2]**2),
-                gi_reescale ** 2* (rest_layer_points[:, 0]*rest_layer_points[:, 1] - ref_layer_points[:, 0]*ref_layer_points[:, 1]),
-                gi_reescale ** 2* (rest_layer_points[:, 0]*rest_layer_points[:, 2] - ref_layer_points[:, 0]*ref_layer_points[:, 2]),
-                gi_reescale ** 2* (rest_layer_points[:, 1]*rest_layer_points[:, 2] - ref_layer_points[:, 1]*ref_layer_points[:, 2]),
+                gi_reescale ** 2 * (rest_layer_points[:, 0] ** 2 - ref_layer_points[:, 0] ** 2),
+                gi_reescale ** 2 * (rest_layer_points[:, 1] ** 2 - ref_layer_points[:, 1] ** 2),
+                gi_reescale ** 2 * (rest_layer_points[:, 2] ** 2 - ref_layer_points[:, 2] ** 2),
+                gi_reescale ** 2 * (
+                rest_layer_points[:, 0] * rest_layer_points[:, 1] - ref_layer_points[:, 0] * ref_layer_points[:, 1]),
+                gi_reescale ** 2 * (
+                rest_layer_points[:, 0] * rest_layer_points[:, 2] - ref_layer_points[:, 0] * ref_layer_points[:, 2]),
+                gi_reescale ** 2 * (
+                rest_layer_points[:, 1] * rest_layer_points[:, 2] - ref_layer_points[:, 1] * ref_layer_points[:, 2]),
             ).T
 
         # =================================
@@ -614,7 +576,7 @@ class Interpolator(GeoPlot):
 
         # Creation of a matrix of dimensions equal to the grid with the weights for every point (big 4D matrix in
         # ravel form)
-        weights = T.tile(DK_parameters, (self.grid_val.shape[0], 1)).T
+        weights = T.tile(DK_parameters, (grid_val.shape[0], 1)).T
 
         # Gradient contribution
         sigma_0_grad = T.sum(
@@ -631,16 +593,16 @@ class Interpolator(GeoPlot):
         sigma_0_interf = (T.sum(
             -weights[length_of_CG:length_of_CG + length_of_CGI, :] *
             (self.c_o * i_reescale * (
-             (SED_rest_SimPoint < self.a) *  # SimPoint - Rest Covariances Matrix
-             (1 - 7 * (SED_rest_SimPoint / self.a) ** 2 +
-              35 / 4 * (SED_rest_SimPoint / self.a) ** 3 -
-              7 / 2 * (SED_rest_SimPoint / self.a) ** 5 +
-              3 / 4 * (SED_rest_SimPoint / self.a) ** 7) -
-             ((SED_ref_SimPoint < self.a) *  # SimPoint- Ref
-              (1 - 7 * (SED_ref_SimPoint / self.a) ** 2 +
-               35 / 4 * (SED_ref_SimPoint / self.a) ** 3 -
-               7 / 2 * (SED_ref_SimPoint / self.a) ** 5 +
-              3 / 4 * (SED_ref_SimPoint / self.a) ** 7)))), axis=0))
+                (SED_rest_SimPoint < self.a) *  # SimPoint - Rest Covariances Matrix
+                (1 - 7 * (SED_rest_SimPoint / self.a) ** 2 +
+                 35 / 4 * (SED_rest_SimPoint / self.a) ** 3 -
+                 7 / 2 * (SED_rest_SimPoint / self.a) ** 5 +
+                 3 / 4 * (SED_rest_SimPoint / self.a) ** 7) -
+                ((SED_ref_SimPoint < self.a) *  # SimPoint- Ref
+                 (1 - 7 * (SED_ref_SimPoint / self.a) ** 2 +
+                  35 / 4 * (SED_ref_SimPoint / self.a) ** 3 -
+                  7 / 2 * (SED_ref_SimPoint / self.a) ** 5 +
+                  3 / 4 * (SED_ref_SimPoint / self.a) ** 7)))), axis=0))
 
         # Potential field
         if self.u_grade.get_value() == 0:
@@ -649,16 +611,17 @@ class Interpolator(GeoPlot):
         else:
             gi_rescale_aux = T.repeat(gi_reescale, 9)
             gi_rescale_aux = T.set_subtensor(gi_rescale_aux[:3], 1)
-            na = T.tile(gi_rescale_aux[:grade_universal], (self.grid_val.shape[0], 1)).T
+            na = T.tile(gi_rescale_aux[:grade_universal], (grid_val.shape[0], 1)).T
             f_0 = (T.sum(
-                 weights[-length_of_U_I:, :] * gi_reescale * na *
-                 self.universal_matrix[:grade_universal], axis=0))
+                weights[-length_of_U_I:, :] * gi_reescale * na *
+                universal_matrix[:grade_universal], axis=0))
 
             Z_x = (sigma_0_grad + sigma_0_interf + f_0)[:-rest_layer_points.shape[0]]
             potential_field_interfaces = (sigma_0_grad + sigma_0_interf + f_0)[-rest_layer_points.shape[0]:]
+
         self.interpolate = theano.function(
             [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points],
-             [Z_x, G_x, G_y, G_z, potential_field_interfaces, C_matrix, DK_parameters],
+            [Z_x, G_x, G_y, G_z, potential_field_interfaces, C_matrix, DK_parameters],
             on_unused_input="warn", profile=True, allow_input_downcast=True)
 
     def theano_set_3D_nugget_degree0(self):
