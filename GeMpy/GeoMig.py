@@ -21,7 +21,8 @@ class Interpolator(GeoPlot):
     """
     Class which contain all needed methods to perform potential field implicit modelling
     """
-    def __init__(self, range_var=None, c_o=None, nugget_effect=0.01, u_grade=9, rescaling_factor=1):
+    def __init__(self, x_min, x_max, y_min, y_max, z_min, z_max,
+                 range_var=None, c_o=None, nugget_effect=0.01, u_grade=9, rescaling_factor=1):
         """
         Basic interpolator parameters. Also here it is possible to change some flags of theano
         :param range_var: Range of the variogram, it is recommended the distance of the longest diagonal
@@ -32,11 +33,13 @@ class Interpolator(GeoPlot):
         theano.config.optimizer = "fast_run"
         theano.config.exception_verbosity = 'low'
         theano.config.compute_test_value = 'ignore'
+        self.set_extent(x_min, x_max, y_min, y_max, z_min, z_max)
 
         if not range_var:
             range_var = np.sqrt((self.xmax-self.xmin)**2 +
                                 (self.ymax-self.ymin)**2 +
                                 (self.zmax-self.zmin)**2)
+
         if not c_o:
             c_o = range_var**2/14/3
 
@@ -49,10 +52,18 @@ class Interpolator(GeoPlot):
 
         self.rescaling_factor_T = theano.shared(rescaling_factor, "rescaling factor", allow_downcast=True)
 
-
+        self.rest_dim = theano.shared(np.zeros(2))
         # TODO: Assert u_grade is 0,3 or 9
 
         # TODO: defne instances attribute in init using this parse arguments thing
+
+    def aux_range_funct(self):
+        range_var = np.sqrt((self.xmax - self.xmin) ** 2 +
+                            (self.ymax - self.ymin) ** 2 +
+                            (self.zmax - self.zmin) ** 2)
+
+        self.a = theano.shared(range_var, "range", allow_downcast=True)
+
     def create_regular_grid_2D(self):
         """
         Method to create a 2D regular grid where we interpolate
@@ -86,6 +97,9 @@ class Interpolator(GeoPlot):
                 self.grid[:, 0] * self.grid[:, 1],
                 self.grid[:, 0] * self.grid[:, 2],
                 self.grid[:, 1] * self.grid[:, 2]))
+
+            self.block = theano.shared(np.zeros_like(self.grid[:, 0]))
+
         except AttributeError:
              raise AttributeError("Extent or resolution not provided. Use set_extent and/or set_resolutions first")
 
@@ -101,6 +115,9 @@ class Interpolator(GeoPlot):
     # TODO: Once we have the data frame extract data to interpolator
 
     def load_data_csv(self, data_type, path=os.getcwd()):
+
+        # TODO: in case that the columns have a different name specify in pandas which columns are interfaces /
+        #  coordinates, dips and so on.
         """
         Method to load either interface or foliations data csv files. Normally this is in which GeoModeller exports it
         :param data_type: string, 'interfaces' or 'foliations'
@@ -111,7 +128,6 @@ class Interpolator(GeoPlot):
             self.Foliations = pn.read_csv(path)
         else:
             self.Interfaces = pn.read_csv(path)
-
 
         try:
             getattr(self, "formations")
@@ -125,7 +141,8 @@ class Interpolator(GeoPlot):
                     for check in self.formations:
                         assert (el not in check or el == check), "One of the formations name contains other sting. Please rename."+str(el)+" in "+str(check)
 
-                # TODO: Add the possibility to change the name in pandas directly (adding just a 1 in the contained string)
+                # TODO: Add the possibility to change the name in pandas directly
+                        # (adding just a 1 in the contained string)
 
             except AttributeError:
                 pass
@@ -146,69 +163,135 @@ class Interpolator(GeoPlot):
         :param series_distribution:
         :return:
         """
-        if series_distribution == None:
+        if series_distribution is None:
             # TODO: Possibly we have to debug this function
-            self.series = {"Default serie":self.formations}
+            _series = {"Default serie":self.formations}
 
         else:
-            assert type(series_distribution) is dict, "series_distribution must be a dictionary, see Docstring for more information"
-            assert sum(np.shape([i])[-1] for i in series_distribution.values()) is len(self.formations), "series_distribution must have the same number of values as number of formations %s." % self.formations
-            self.series = series_distribution
+            assert type(series_distribution) is dict, "series_distribution must be a dictionary, " \
+                                                      "see Docstring for more information"
+            assert sum(np.shape([i])[-1] for i in series_distribution.values()) is len(self.formations),\
+                "series_distribution must have the same number of values as number of formations %s."\
+                % self.formations
+            _series = series_distribution
 
-    def compute_potential_field(self, series_name=0, verbose =0):
+        self.series = pn.DataFrame(data=_series, columns=_series.keys())
+
+    def _select_serie(self, series_name=0, verbose=0):
         """
-        Compute potential field for the given serie
-        :param series_name: name of the serie. Default first of the list
-        :return: potential field of the serie
+        Return the formations of a given serie in string
+        :param series_name: name or argument of the serie. Default first of the list
+        :return: formations of a given serie in string separeted by |
         """
-        # I hate dictionaries
         if type(series_name) == int:
-            if np.shape([list(self.series.values())[series_name]])[-1] > 1:
-                serie = "|".join(list(self.series.values())[series_name])
-            else:
-                serie = list(self.series.values())[series_name]
-
+            formations_in_serie = "|".join(self.series.ix[:, series_name].drop_duplicates())
         elif type(series_name) == str:
-            if np.shape([self.series[series_name]])[-1] > 1:
-                serie = "|".join(self.series[series_name])
-            else:
-                serie = self.series[series_name]
+            formations_in_serie = "|".join(self.series[series_name].drop_duplicates())
+        return formations_in_serie
 
-        self.dips_position = self.Foliations[self.Foliations["formation"].str.contains(serie)].as_matrix()[:, :3]
-        self.dip_angles = self.Foliations[self.Foliations["formation"].str.contains(serie)]["dip"].as_matrix()
-        self.azimuth = self.Foliations[self.Foliations["formation"].str.contains(serie)]["azimuth"].as_matrix()
-        self.polarity = self.Foliations[self.Foliations["formation"].str.contains(serie)]["polarity"].as_matrix()
+    def compute_block_model(self, series_number="all", verbose=0):
 
+        if series_number == "all":
+            series_number = np.arange(len(self.series))
+        for i in series_number:
+            formations_in_serie = self._select_serie(i)
+            n_formation = np.squeeze(np.where(np.in1d(self.formations, self.series.ix[:, i])))+1
+            if verbose > 0:
+                print(n_formation)
+            self._aux_computations_block_model(formations_in_serie, np.array(n_formation, ndmin=1),
+                                               verbose=verbose)
 
+    def compute_potential_field(self, series_name=0, verbose=0):
 
-        if np.shape([self.series[series_name]])[-1]  == 1:
+        assert series_name is not "all", "Compute potential field only returns one potential field at the time"
+        formations_in_serie = self._select_serie(series_name)
+        self._aux_computations_potential_field(formations_in_serie, verbose=verbose)
 
-            self.layers = self.Interfaces[self.Interfaces["formation"].str.contains(serie)].as_matrix()[:, :-1]
+    def _aux_computations_block_model(self, for_in_ser, n_formation, verbose=0):
+
+        # TODO Probably here I should add some asserts for sanity check
+
+        try:
+            yet_simulated = (self.block.get_value() == 0)*1
+            if verbose > 0:
+                print(yet_simulated, (yet_simulated == 0).sum())
+        except AttributeError:
+            yet_simulated = np.ones_like(self.grid[:, 0], dtype="int8")
+            print("I am in the except")
+        # TODO: change [:,:3] that is positional based for XYZ so is more consistent
+        self.dips_position = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
+        self.dip_angles = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["dip"].as_matrix()
+        self.azimuth = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["azimuth"].as_matrix()
+        self.polarity = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["polarity"].as_matrix()
+
+        if for_in_ser.count("|") == 0:
+            self.layers = self.Interfaces[self.Interfaces["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
             rest_layer_points = self.layers[1:]
-            ref_layer_points = np.tile(self.layers[0], (np.shape(self.layers)[0]-1, 1))
+            self.rest_dim.set_value(np.array(rest_layer_points.shape[0], ndmin=1))
+            ref_layer_points = np.tile(self.layers[0], (np.shape(self.layers)[0] - 1, 1))
+        else:
+            # TODO: This is ugly
+            layers_list = []
+            for formation in for_in_ser.split("|"):
+                layers_list.append(self.Interfaces[self.Interfaces["formation"] == formation].as_matrix()[:, :3])
+            self.layers = np.asarray(layers_list)
+
+            rest_layer_points = self.layers[0][1:]
+            rest_dim = np.array(self.layers[0][1:].shape[0], ndmin=1)
+            for i in self.layers[1:]:
+                rest_layer_points = np.vstack((rest_layer_points, i[1:]))
+                rest_dim = np.append(rest_dim, rest_dim[-1]+i[1:].shape[0])
+            self.rest_dim.set_value(rest_dim)
+            ref_layer_points = np.vstack((np.tile(i[0], (np.shape(i)[0] - 1, 1)) for i in self.layers))
+
+        if verbose > 0:
+            print("The serie formations are %s" % for_in_ser)
+            if verbose > 1:
+                print("The formations are: \n"
+                      "Layers ", self.Interfaces[self.Interfaces["formation"].str.contains(for_in_ser)], " \n "
+                                                                                                    "Foliations ",
+                      self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)])
+
+        self.block_export(self.dips_position, self.dip_angles, self.azimuth, self.polarity,
+                          rest_layer_points, ref_layer_points,
+                          n_formation, yet_simulated)
+
+    def _aux_computations_potential_field(self,  for_in_ser, verbose=0):
+
+        # TODO: change [:,:3] that is positional based for XYZ so is more consistent
+        self.dips_position = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
+        self.dip_angles = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["dip"].as_matrix()
+        self.azimuth = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["azimuth"].as_matrix()
+        self.polarity = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["polarity"].as_matrix()
+
+        if for_in_ser.count("|") == 0:
+            self.layers = self.Interfaces[self.Interfaces["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
+            rest_layer_points = self.layers[1:]
+            ref_layer_points = np.tile(self.layers[0], (np.shape(self.layers)[0] - 1, 1))
         else:
 
             # TODO: This is ugly
             layers_list = []
-            for formation in self.series[series_name]:
-                layers_list.append(self.Interfaces[self.Interfaces["formation"] == formation].as_matrix()[:, :-1])
+            for formation in for_in_ser.split("|"):
+                layers_list.append(self.Interfaces[self.Interfaces["formation"] == formation].as_matrix()[:, :3])
             self.layers = np.asarray(layers_list)
             rest_layer_points = np.vstack((i[1:] for i in self.layers))
-            ref_layer_points = np.vstack((np.tile(i[0], (np.shape(i)[0]-1, 1)) for i in self.layers))
+            ref_layer_points = np.vstack((np.tile(i[0], (np.shape(i)[0] - 1, 1)) for i in self.layers))
 
         if verbose > 0:
-            print("The serie formations are %s" % serie)
+            print("The serie formations are %s" % for_in_ser)
             if verbose > 1:
                 print("The formations are: \n"
-                      "Layers ", self.Interfaces[self.Interfaces["formation"].str.contains(serie)], " \n "
-                      "Foliations ", self.Foliations[self.Foliations["formation"].str.contains(serie)])
+                      "Layers ", self.Interfaces[self.Interfaces["formation"].str.contains(for_in_ser)], " \n "
+                                                                                                    "Foliations ",
+                      self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)])
 
         self.Z_x, self.G_x, self.G_y, self.G_z, self.potential_interfaces, self.C, self.DK = self.interpolate(
             self.dips_position, self.dip_angles, self.azimuth, self.polarity,
             rest_layer_points, ref_layer_points)[:]
 
-    #    self.potential_field = np.swapaxes(self.Z_x.reshape(self.nx, self.ny, self.nz), 0, 1)
         self.potential_field = self.Z_x.reshape(self.nx, self.ny, self.nz)
+
     def theano_compilation_3D(self):
         """
         Function that generates the symbolic code to perform the interpolation
@@ -248,8 +331,13 @@ class Interpolator(GeoPlot):
         _aux_rest_layer_points = rest_layer_points.astype("float64")
         _aux_ref_layer_points = ref_layer_points.astype("float64")
 
-        # This thing is the addition to simulate also the layer points
-        grid_val = T.vertical_stack(self.grid_val_T, rest_layer_points)
+        # Here we create the array with the points to simulate:
+        #   Grid points except those who have been simulated in a younger serie
+        #   Interfaces points to segment the lithologies
+        yet_simulated = T.vector("boolean function that avoid to simulate twice a point of a different serie")
+        grid_val = T.vertical_stack((
+            self.grid_val_T*yet_simulated.reshape((yet_simulated.shape[0],1))).nonzero_values().reshape((-1, 3)),
+                                    rest_layer_points)
 
         universal_terms_layers = T.horizontal_stack(
                 rest_layer_points,
@@ -258,8 +346,9 @@ class Interpolator(GeoPlot):
                 rest_layer_points[:, 0] * rest_layer_points[:, 2],
                 rest_layer_points[:, 1] * rest_layer_points[:, 2]), axis=1)).T
 
-        universal_matrix = T.horizontal_stack(self.universal_matrix_T, universal_terms_layers)
-
+        universal_matrix = T.horizontal_stack(
+            (self.universal_matrix_T * yet_simulated).nonzero_values().reshape((grade_universal, -1)),
+            universal_terms_layers)
 
         _aux_grid_val = grid_val.astype("float64")
 
@@ -612,6 +701,7 @@ class Interpolator(GeoPlot):
         # Potential field
         if self.u_grade_T.get_value() == 0:
             Z_x = (sigma_0_grad + sigma_0_interf)
+            potential_field_interfaces = (sigma_0_grad + sigma_0_interf)[-rest_layer_points.shape[0]:]
 
         else:
             gi_rescale_aux = T.repeat(gi_reescale, 9)
@@ -619,44 +709,76 @@ class Interpolator(GeoPlot):
             na = T.tile(gi_rescale_aux[:grade_universal], (grid_val.shape[0], 1)).T
             f_0 = (T.sum(
                 weights[-length_of_U_I:, :] * gi_reescale * na *
-                universal_matrix[:grade_universal], axis=0))
+                universal_matrix[:grade_universal]
+                , axis=0))
 
+            # Value of the potential field
             Z_x = (sigma_0_grad + sigma_0_interf + f_0)[:-rest_layer_points.shape[0]]
             potential_field_interfaces = (sigma_0_grad + sigma_0_interf + f_0)[-rest_layer_points.shape[0]:]
 
+        # Theano function to calculate a potential field
         self.interpolate = theano.function(
-            [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points],
+            [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points,
+             theano.In(yet_simulated, value=np.ones_like(self.grid[:, 0]))],
             [Z_x, G_x, G_y, G_z, potential_field_interfaces, C_matrix, DK_parameters],
             on_unused_input="warn", profile=True, allow_input_downcast=True)
 
-        # TODO: Should I go on in this function and compile also the function that export lithonlogies? Probably
+        #=======================================================================
+        #               CODE TO EXPORT THE BLOCK DIRECTLY
+        #========================================================================
 
 
         # Aux shared parameters
-
         infinite_pos = theano.shared(np.float32(np.inf))
         infinite_neg = theano.shared(np.float32(-np.inf))
 
         # TODO: At some point I should make this shared
+        # Value of the lithology-segment
         n_formation = T.vector("The assigned number of the lithologies in this serie")
 
-        #potential_field = Z_x.reshape(self.nx_T, self.ny_T, self.nz_T)
+        # Loop to obtain the average Zx for every intertace
+        def average_potential(dim_a, dim_b, pfi):
+            """
 
-        potential_field_interfaces = T.concatenate((T.stack(infinite_neg),
-                                                    potential_field_interfaces,
+            :param dim: size of the rest values vector per formation
+            :param pfi: the values of all the rest values potentials
+            :return: average of the potential per formation
+            """
+            average = pfi[T.cast(dim_a, "int32"): T.cast(dim_b, "int32")].sum()/(dim_b-dim_a)
+            return average
+
+        potential_field_unique, updates1 = theano.scan(fn=average_potential,
+                                                       outputs_info=None,
+                                                       sequences=dict(
+                                                           input=T.concatenate((T.stack(0),
+                                                                                self.rest_dim,
+                                                                                )), taps=[0, 1]),
+                                                       non_sequences=potential_field_interfaces)
+
+        # Loop to segment the distinct lithologies
+        potential_field_iter = T.concatenate((T.stack(infinite_pos),
+                                                    potential_field_unique,
                                                     T.stack(infinite_neg)))
 
         def compare(a, b, n_formation, Zx):
-            return T.ge(Zx, a) * T.le(Zx, b) * n_formation
+            return T.le(Zx, a) * T.ge(Zx, b) * n_formation
 
-        components, updates = theano.scan(fn=compare,
-                                          outputs_info=None,
-                                          sequences=[dict(input=potential_field_interfaces, taps=[0, 1]),
-                                                     n_formation],
-                                          non_sequences=Z_x)
+        block, updates2 = theano.scan(fn=compare,
+                                      outputs_info=None,
+                                      sequences=[dict(input=potential_field_iter, taps=[0, 1]),
+                                                 n_formation],
+                                      non_sequences=Z_x)
 
+        # Adding to the block the contribution of the potential field
+        potential_field_contribution = T.set_subtensor(
+            self.block[T.nonzero(T.cast(yet_simulated, "int8"))[0]],
+            block.sum(axis=0))
 
-
+        # Theano function to update the block
+        self.block_export = theano.function([dips_position, dip_angles, azimuth, polarity, rest_layer_points,
+                                             ref_layer_points, n_formation, yet_simulated],
+                                            updates=[(self.block,  potential_field_contribution)],
+                                            on_unused_input="warn", profile=True, allow_input_downcast=True)
 
 
 
