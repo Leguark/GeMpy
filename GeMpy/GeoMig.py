@@ -351,7 +351,7 @@ class Interpolator(GeoPlot):
                 rest_layer_points[:, 1] * rest_layer_points[:, 2]), axis=1)).T
 
         universal_matrix = T.horizontal_stack(
-            (self.universal_matrix_T * yet_simulated).nonzero_values().reshape((grade_universal, -1)),
+            (self.universal_matrix_T * yet_simulated).nonzero_values().reshape((9, -1)),
             universal_terms_layers)
 
         _aux_grid_val = grid_val.astype("float64")
@@ -704,7 +704,7 @@ class Interpolator(GeoPlot):
 
         # Potential field
         if self.u_grade_T.get_value() == 0:
-            Z_x = (sigma_0_grad + sigma_0_interf)
+            Z_x = (sigma_0_grad + sigma_0_interf)[:-rest_layer_points.shape[0]]
             potential_field_interfaces = (sigma_0_grad + sigma_0_interf)[-rest_layer_points.shape[0]:]
 
         else:
@@ -777,7 +777,8 @@ class Interpolator(GeoPlot):
             self.block[T.nonzero(T.cast(yet_simulated, "int8"))[0]],
             block.sum(axis=0))
 
-        #grad = T.jacobian(potential_field_contribution, a)
+        #grad = T.grad(potential_field_contribution, azimuth[0])
+        # grad = T.grad(azimuth[0], potential_field_contribution)
 
         # Theano function to update the block
         self.block_export = theano.function([dips_position, dip_angles, azimuth, polarity, rest_layer_points,
