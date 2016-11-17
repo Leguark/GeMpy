@@ -139,7 +139,8 @@ class Interpolator(GeoPlot):
                 # TODO: Trying to make this more elegant?
                 for el in self.formations:
                     for check in self.formations:
-                        assert (el not in check or el == check), "One of the formations name contains other sting. Please rename."+str(el)+" in "+str(check)
+                        assert (el not in check or el == check), "One of the formations name contains other" \
+                                                                 " string. Please rename."+str(el)+" in "+str(check)
 
                 # TODO: Add the possibility to change the name in pandas directly
                         # (adding just a 1 in the contained string)
@@ -157,10 +158,11 @@ class Interpolator(GeoPlot):
         except AttributeError:
             pass
 
-    def set_series(self, series_distribution=None):
+    def set_series(self, series_distribution=None, order=None):
         """
         The formations have to be separated by this thing! |
         :param series_distribution:
+        :param order of the series by default takes the dictionary keys which until python 3.6 are random
         :return:
         """
         if series_distribution is None:
@@ -170,12 +172,14 @@ class Interpolator(GeoPlot):
         else:
             assert type(series_distribution) is dict, "series_distribution must be a dictionary, " \
                                                       "see Docstring for more information"
-            assert sum(np.shape([i])[-1] for i in series_distribution.values()) is len(self.formations),\
+            _series = series_distribution
+        if not order:
+            order = _series.keys()
+        _series = pn.DataFrame(data=_series, columns=order)
+        assert np.count_nonzero(np.unique(_series.values)) is len(self.formations),\
                 "series_distribution must have the same number of values as number of formations %s."\
                 % self.formations
-            _series = series_distribution
-
-        self.series = pn.DataFrame(data=_series, columns=_series.keys())
+        self.series = _series
 
     def _select_serie(self, series_name=0, verbose=0):
         """
@@ -252,7 +256,7 @@ class Interpolator(GeoPlot):
                                                                                                     "Foliations ",
                       self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)])
 
-        self.block_export(self.dips_position, self.dip_angles, self.azimuth, self.polarity,
+        self.grad = self.block_export(self.dips_position, self.dip_angles, self.azimuth, self.polarity,
                           rest_layer_points, ref_layer_points,
                           n_formation, yet_simulated)
 
@@ -727,7 +731,6 @@ class Interpolator(GeoPlot):
         #               CODE TO EXPORT THE BLOCK DIRECTLY
         #========================================================================
 
-
         # Aux shared parameters
         infinite_pos = theano.shared(np.float32(np.inf))
         infinite_neg = theano.shared(np.float32(-np.inf))
@@ -774,9 +777,11 @@ class Interpolator(GeoPlot):
             self.block[T.nonzero(T.cast(yet_simulated, "int8"))[0]],
             block.sum(axis=0))
 
+        #grad = T.jacobian(potential_field_contribution, a)
+
         # Theano function to update the block
         self.block_export = theano.function([dips_position, dip_angles, azimuth, polarity, rest_layer_points,
-                                             ref_layer_points, n_formation, yet_simulated],
+                                             ref_layer_points, n_formation, yet_simulated], None,
                                             updates=[(self.block,  potential_field_contribution)],
                                             on_unused_input="warn", profile=True, allow_input_downcast=True)
 
