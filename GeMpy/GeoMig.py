@@ -30,8 +30,8 @@ class Interpolator(GeoPlot):
         """
         # TODO: update Docstring
 
-        theano.config.optimizer = "fast_run"
-        theano.config.exception_verbosity = 'low'
+        theano.config.optimizer = 'None'
+        theano.config.exception_verbosity = 'high'
         theano.config.compute_test_value = 'ignore'
         self.set_extent(x_min, x_max, y_min, y_max, z_min, z_max)
 
@@ -108,8 +108,8 @@ class Interpolator(GeoPlot):
         self.nx_T = theano.shared(self.nx, "Resolution in x axis")
         self.ny_T = theano.shared(self.ny, "Resolution in y axis")
         self.nz_T = theano.shared(self.nz, "Resolution in z axis")
-        self.grid_val_T = theano.shared(self.grid, "Positions of the points to interpolate")
-        self.universal_matrix_T = theano.shared(self._universal_matrix, "universal matrix")
+        self.grid_val_T = theano.shared(self.grid+1e-10, "Positions of the points to interpolate")
+        self.universal_matrix_T = theano.shared(self._universal_matrix+1e-10, "universal matrix")
     # TODO: Data management using pandas, find an easy way to add values
 
     # TODO: Once we have the data frame extract data to interpolator
@@ -340,7 +340,7 @@ class Interpolator(GeoPlot):
         #   Interfaces points to segment the lithologies
         yet_simulated = T.vector("boolean function that avoid to simulate twice a point of a different serie")
         grid_val = T.vertical_stack((
-            self.grid_val_T*yet_simulated.reshape((yet_simulated.shape[0],1))).nonzero_values().reshape((-1, 3)),
+            self.grid_val_T*yet_simulated.reshape((yet_simulated.shape[0], 1))).nonzero_values().reshape((-1, 3)),
                                     rest_layer_points)
 
         universal_terms_layers = T.horizontal_stack(
