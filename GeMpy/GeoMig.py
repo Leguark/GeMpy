@@ -777,7 +777,8 @@ class Interpolator(GeoPlot):
             self.block[T.nonzero(T.cast(yet_simulated, "int8"))[0]],
             block.sum(axis=0))
 
-        #grad = T.grad(potential_field_contribution, azimuth[0])
+
+     #  grad = T.jacobian(potential_field_contribution.sum(), rest_layer_points)
         # grad = T.grad(azimuth[0], potential_field_contribution)
 
         # Theano function to update the block
