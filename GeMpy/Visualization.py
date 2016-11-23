@@ -13,70 +13,24 @@ import matplotlib.pyplot as plt
 
 # TODO: inherit pygeomod classes
 import sys, os
-sys.path.append("/home/bl3/PycharmProjects/pygeomod/")
-#from home/bl3/PycharmProjects/pygeomod/pygeomod import geogrid
+from GeMpy.GeMpy_core import DataManagement, Interpolator
 
-class GeoPlot():
+
+class GeoPlot_2D(DataManagement):
     """Object Definition to perform Bayes Analysis"""
 
     def __init__(self, **kwds):
         """nothing"""
 
-    def set_basename(self, name):
-        """Set basename for grid exports, etc.
-
-        **Arguments**:
-            - *name* = string: basename
-        """
-        self.basename = name
-
-    def set_extent(self,x_min, x_max, y_min, y_max, z_min, z_max):
-        """Set basename for grid exports, etc.
-
-            **Arguments**:
-                - *3-D coordinates* = float: dimensions of the domain
-            """
-        self.xmin = x_min
-        self.xmax = x_max
-        self.ymin = y_min
-        self.ymax = y_max
-        self.zmin = z_min
-        self.zmax = z_max
-
-    def set_resolutions(self, nx, ny, nz):
-        """
-
-        :param nx: Resolution in x direction
-        :param ny: Resolution in y direction
-        :param nz: Resolution in z direction
-        :return: The self values
-        """
-
-        self.nx ,self.ny, self.nz = nx, ny, nz
-
-    def set_layers(self, layers):
-
-        """ Generate a 3-D dimensional array where:
-         - axis 0 contains xyz coordinates of every points.
-         - axis 1 every point per layer
-         - axis 2 every layer
-        :param layers: 2D numpy array of every layer
-        :return: 3D numpy array encapsulating every layer
-        """
-
-        self.layers = np.asarray(layers)
-
-    def calculate_gradient(self):
-        """ Calculate the gradient vector of module 1 given dip and azimuth
-
-        :return: Components xyz of the unity vector.
-        """
-        self.G_x = np.sin(np.deg2rad(self.dips_angles)) * np.sin(np.deg2rad(self.azimuths)) * self.polarity
-        self.G_z = np.cos(np.deg2rad(self.dips_angles)) * self.polarity
-        self.G_y = np.sin(np.deg2rad(self.dips_angles)) * np.cos(np.deg2rad(self.azimuths)) * self.polarity
 
     # TODO planning the whole visualization scheme. Only data, potential field and block. 2D 3D? Improving the iteration
     # with pandas framework
+
+    def plot_block_section(self, cell_number=13):
+
+        plot_block = Interpolator.block.get_value().reshape(self.nx, self.ny, self.nz)
+        plt.imshow(plot_block[:, cell_number, :].T, origin="bottom", aspect="equal",
+                   extent=(self.xmin, self.xmax, self.zmin, self.zmax), interpolation="none")
 
     def plot_potential_field_2D(self, direction="x", cell_pos="center", **kwargs):
 
