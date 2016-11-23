@@ -75,6 +75,9 @@ class GeoPlot():
         self.G_z = np.cos(np.deg2rad(self.dips_angles)) * self.polarity
         self.G_y = np.sin(np.deg2rad(self.dips_angles)) * np.cos(np.deg2rad(self.azimuths)) * self.polarity
 
+    # TODO planning the whole visualization scheme. Only data, potential field and block. 2D 3D? Improving the iteration
+    # with pandas framework
+
     def plot_potential_field_2D(self, direction="x", cell_pos="center", **kwargs):
 
         """Plot a section through the model in a given coordinate direction
@@ -113,6 +116,7 @@ class GeoPlot():
         linewidth = kwargs.get("linewidth", 1)
         levels = kwargs.get("plot_layer", None)
         kwargs.get("linear_interpolation", False)
+        kwargs.get('potential_field', True)
 
         if not "ax" in kwargs:
             colorbar = kwargs.get('colorbar', True)
@@ -127,7 +131,7 @@ class GeoPlot():
         if direction == "y":
 
             plt.xlabel("x")
-            plt.ylabel("y")
+            plt.ylabel("z")
 
             if type(cell_pos) == str:
                 # decipher cell position
@@ -160,7 +164,7 @@ class GeoPlot():
                         plt.plot(layer[:, 0], layer[:, 2])
 
             # Plotting potential field if is calculated
-            if hasattr(self, 'potential_field'):
+            if hasattr(self, 'potential_field') and "potential_field" in kwargs:
                 grid_slice = self.potential_field[:, pos, :]
                 grid_slice = grid_slice.transpose()
                 plt.contour(grid_slice, contour_lines, extent=(self.xmin, self.xmax, self.zmin, self.zmax), **kwargs)
@@ -171,3 +175,49 @@ class GeoPlot():
             plt.ylim(self.zmin, self.zmax)
           #  plt.margins(x = 0.1, y = 0.1)
             plt.title("Model Section. Direction: %s. Cell position: %s" % (direction,cell_pos))
+
+        if direction == "x":
+
+            plt.xlabel("y")
+            plt.ylabel("z")
+
+            if type(cell_pos) == str:
+                # decipher cell position
+                if cell_pos == 'center' or cell_pos == 'centre':
+                    pos = self.nx / 2
+                elif cell_pos == 'min':
+                    pos = 0
+                elif cell_pos == 'max':
+                    pos = self.nx
+            else:
+                pos = cell_pos
+
+            # Plotting orientations
+            plt.quiver(self.dips_position[:, 1], self.dips_position[:, 2], self.G_y, self.G_z, pivot="tail")
+
+            # Plotting interfaces
+            if self.layers.ndim == 2:
+                layer = self.layers
+                plt.plot(layer[:, 1], layer[:, 2], "o")
+
+                if "linear_interpolation" in kwargs:
+                    plt.plot(layer[:, 1], layer[:, 2])
+            else:
+                for layer in self.layers:
+                    plt.plot(layer[:, 1], layer[:, 2], "o")
+
+                    if "linear_interpolation" in kwargs:
+                        plt.plot(layer[:, 1], layer[:, 2])
+
+            # Plotting potential field if is calculated
+            if hasattr(self, 'potential_field') and "potential_field" in kwargs:
+                grid_slice = self.potential_field[pos, :, :]
+                grid_slice = grid_slice.transpose()
+                plt.contour(grid_slice, contour_lines, extent=(self.ymin, self.ymax, self.zmin, self.zmax), **kwargs)
+                if colorbar:
+                    plt.colorbar()
+            # General plot settings
+            plt.xlim(self.ymin, self.ymax)
+            plt.ylim(self.zmin, self.zmax)
+            #  plt.margins(x = 0.1, y = 0.1)
+            plt.title("Model Section. Direction: %s. Cell position: %s" % (direction, cell_pos))
