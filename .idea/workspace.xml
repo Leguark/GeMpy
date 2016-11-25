@@ -2,22 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="050fb100-0240-4a70-a41a-778e251719ea" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/GeMpy/External_communication.py" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Prototype Notebook/Geothealler big function 3D-Testing-QuiteOld.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Prototype Notebook/Geothealler big function 3D-Testing-degree0-Copy1.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Prototype Notebook/Geothealler big function 3D.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Prototype Notebook/Kriging 6.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Prototype Notebook/Playing with the scale factor.ipynb" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/Prototype Notebook/Understanding theano scan and switch.ipynb" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/GeMpy/GeoMig.py" afterPath="$PROJECT_DIR$/GeMpy/GeMpy_core.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/dictionaries/miguel.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/GeMpy/GeMpy_core.py" afterPath="$PROJECT_DIR$/GeMpy/GeMpy_core.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/GeMpy/Visualization.py" afterPath="$PROJECT_DIR$/GeMpy/Visualization.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/GeMpy/__init__.py" afterPath="$PROJECT_DIR$/GeMpy/__init__.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Prototype Notebook/.ipynb_checkpoints/Sandstone Project-Copy1-checkpoint.ipynb" afterPath="$PROJECT_DIR$/Prototype Notebook/.ipynb_checkpoints/Sandstone Project-Copy1-checkpoint.ipynb" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Prototype Notebook/Sandstone Project-Copy1.ipynb" afterPath="$PROJECT_DIR$/Prototype Notebook/Sandstone Project-Copy1.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Prototype Notebook/Sandstone Project.ipynb" afterPath="$PROJECT_DIR$/Prototype Notebook/Sandstone Project.ipynb" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/lib/GeMpy/GeoMig.py" afterPath="$PROJECT_DIR$/build/lib/GeMpy/GeoMig.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/lib/GeMpy/Visualization.py" afterPath="$PROJECT_DIR$/build/lib/GeMpy/Visualization.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/build/lib/GeMpy/__init__.py" afterPath="$PROJECT_DIR$/build/lib/GeMpy/__init__.py" />
     </list>
     <ignored path="GeMpy.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -49,106 +39,33 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="GeMpy_core.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="GeMpy_core.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/GeMpy/GeMpy_core.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="229">
-              <caret line="110" column="0" selection-start-line="110" selection-start-column="0" selection-end-line="110" selection-end-column="0" />
+            <state relative-caret-position="256">
+              <caret line="32" column="15" selection-start-line="32" selection-start-column="15" selection-end-line="32" selection-end-column="15" />
               <folding>
                 <element signature="e#191#204#0" expanded="true" />
-                <element signature="e#2064#2839#0" expanded="false" />
-                <element signature="e#2879#3788#0" expanded="false" />
-                <element signature="e#3862#4859#0" expanded="false" />
-                <element signature="e#4903#5453#0" expanded="false" />
+                <element signature="e#2840#3615#0" expanded="false" />
+                <element signature="e#3655#4564#0" expanded="false" />
+                <element signature="e#5679#6229#0" expanded="false" />
+                <element signature="e#6995#7602#0" expanded="false" />
+                <element signature="e#7650#8213#0" expanded="false" />
+                <element signature="e#18452#42202#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="__init__.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/GeMpy/__init__.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
-              <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
-              <folding>
-                <element signature="e#91#114#0" expanded="true" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Visualization.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Visualization.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/GeMpy/Visualization.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="324">
-              <caret line="18" column="31" selection-start-line="18" selection-start-column="31" selection-end-line="18" selection-end-column="31" />
+            <state relative-caret-position="615">
+              <caret line="40" column="0" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
               <folding>
                 <element signature="e#235#253#0" expanded="true" />
-                <element signature="e#1100#7173#0" expanded="false" />
+                <element signature="e#1040#7113#0" expanded="false" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Python/#/home/miguel/PycharmProjects/GeMpy/GeMpy" pinned="false" current-in-tab="false">
-        <entry file="uml://Python/#/home/miguel/PycharmProjects/GeMpy/GeMpy">
-          <provider selected="true" editor-type-id="UmlEditorProvider">
-            <state>
-              <ID>Python</ID>
-              <OriginalElement>#/home/miguel/PycharmProjects/GeMpy/GeMpy</OriginalElement>
-              <nodes>
-                <node x="-128.0" y="433.0">GeMpy.Visualization.GeoPlot_2D</node>
-                <node x="237.75" y="0.0">_collections_abc.Hashable</node>
-                <node x="315.0" y="162.0">GeMpy.External_communication.GeMpy_pyNoddy</node>
-                <node x="0.0" y="162.0">GeMpy.GeMpy_core.DataManagement</node>
-                <node x="287.25" y="81.0">object</node>
-                <node x="-269.0" y="283.0">GeMpy.GeMpy_core.Interpolator</node>
-                <node x="-241.5" y="97.0">GeMpy.GeMpy_core.Grid</node>
-              </nodes>
-              <notes />
-              <edges>
-                <edge source="object" target="_collections_abc.Hashable">
-                  <point x="0.0" y="-15.5" />
-                  <point x="0.0" y="15.5" />
-                </edge>
-                <edge source="GeMpy.GeMpy_core.Interpolator" target="GeMpy.GeMpy_core.Grid">
-                  <point x="0.0" y="-15.5" />
-                  <point x="0.0" y="15.5" />
-                </edge>
-                <edge source="GeMpy.Visualization.GeoPlot_2D" target="GeMpy.GeMpy_core.DataManagement">
-                  <point x="0.0" y="0.0" />
-                  <point x="0.0" y="0.0" />
-                </edge>
-                <edge source="GeMpy.GeMpy_core.Grid" target="GeMpy.GeMpy_core.DataManagement">
-                  <point x="0.0" y="-15.5" />
-                  <point x="0.0" y="15.5" />
-                </edge>
-                <edge source="GeMpy.GeMpy_core.Grid" target="object">
-                  <point x="0.0" y="0.0" />
-                  <point x="0.0" y="0.0" />
-                </edge>
-                <edge source="GeMpy.Visualization.GeoPlot_2D" target="GeMpy.GeMpy_core.Interpolator">
-                  <point x="0.0" y="-15.5" />
-                  <point x="0.0" y="15.5" />
-                </edge>
-                <edge source="GeMpy.External_communication.GeMpy_pyNoddy" target="object">
-                  <point x="0.0" y="-15.5" />
-                  <point x="502.0" y="137.0" />
-                  <point x="343.5" y="137.0" />
-                  <point x="18.75" y="15.5" />
-                </edge>
-                <edge source="GeMpy.GeMpy_core.DataManagement" target="object">
-                  <point x="0.0" y="-15.5" />
-                  <point x="147.5" y="137.0" />
-                  <point x="306.0" y="137.0" />
-                  <point x="-18.75" y="15.5" />
-                </edge>
-              </edges>
-              <settings layout="Hierarchic Group" zoom="1.0" x="-168.5" y="76.0" />
-              <SelectedNodes>
-                <node>GeMpy.Visualization.GeoPlot_2D</node>
-              </SelectedNodes>
-              <Categories />
             </state>
           </provider>
         </entry>
@@ -194,8 +111,8 @@
         <option value="$PROJECT_DIR$/GeMpy/External_communication.py" />
         <option value="$PROJECT_DIR$/GeMpy/GeMpy.py" />
         <option value="$PROJECT_DIR$/GeMpy/__init__.py" />
-        <option value="$PROJECT_DIR$/GeMpy/Visualization.py" />
         <option value="$PROJECT_DIR$/GeMpy/GeMpy_core.py" />
+        <option value="$PROJECT_DIR$/GeMpy/Visualization.py" />
       </list>
     </option>
   </component>
@@ -207,9 +124,9 @@
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="65" />
-    <option name="y" value="-4" />
+    <option name="y" value="24" />
     <option name="width" value="1855" />
-    <option name="height" value="1084" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <OptionsSetting value="true" id="Add" />
@@ -237,7 +154,6 @@
     </navigator>
     <panes>
       <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -288,8 +204,53 @@
               <option name="myItemType" value="com.jetbrains.python.projectView.PyFileNode" />
             </PATH_ELEMENT>
           </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GeMpy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GeMpy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GeMpy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GeMpy_core.py" />
+              <option name="myItemType" value="com.jetbrains.python.projectView.PyFileNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GeMpy" />
+              <option name="myItemType" value="com.jetbrains.python.projectView.PyElementNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GeMpy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GeMpy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GeMpy" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="GeMpy_core.py" />
+              <option name="myItemType" value="com.jetbrains.python.projectView.PyFileNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="DataPreparation" />
+              <option name="myItemType" value="com.jetbrains.python.projectView.PyElementNode" />
+            </PATH_ELEMENT>
+          </PATH>
         </subPane>
       </pane>
+      <pane id="Scratches" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -654,7 +615,14 @@
       <option name="project" value="LOCAL" />
       <updated>1479897490564</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Major changes in the structure. I need to test it further and adjust the inheritances">
+      <created>1479930435548</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1479930435548</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
     <servers />
   </component>
   <component name="TodoView">
@@ -667,28 +635,28 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="65" y="-4" width="1855" height="1084" extended-state="6" />
+    <frame x="65" y="24" width="1855" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.16749585" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.17247097" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.17536534" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14300627" sideWeight="0.50193477" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Database" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32946378" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.18475991" sideWeight="0.48922056" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.14300627" sideWeight="0.49806523" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.2498618" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32985386" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.14300627" sideWeight="0.49806523" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15240084" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Concurrent Activities Diagram" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32985386" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
     </layout>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -733,11 +701,12 @@
     <MESSAGE value="Calculation of the potential value in the interfaces. Not tested yet" />
     <MESSAGE value="Extraction of lithologies in theano. I have to optimize it yet" />
     <MESSAGE value="uploading desktop" />
-    <option name="LAST_COMMIT_MESSAGE" value="uploading desktop" />
+    <MESSAGE value="Major changes in the structure. I need to test it further and adjust the inheritances" />
+    <option name="LAST_COMMIT_MESSAGE" value="Major changes in the structure. I need to test it further and adjust the inheritances" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="14" />
+      <option name="time" value="21" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -748,10 +717,117 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#191#204#0" expanded="true" />
-            <element signature="e#2064#2839#0" expanded="false" />
-            <element signature="e#2879#3788#0" expanded="false" />
-            <element signature="e#3862#4859#0" expanded="false" />
-            <element signature="e#4903#5453#0" expanded="false" />
+            <element signature="e#2840#3615#0" expanded="false" />
+            <element signature="e#3655#4564#0" expanded="false" />
+            <element signature="e#5679#6229#0" expanded="false" />
+            <element signature="e#6995#7602#0" expanded="false" />
+            <element signature="e#7650#8213#0" expanded="false" />
+            <element signature="e#18452#42202#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GeMpy/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
+          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+          <folding>
+            <element signature="e#91#114#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GeMpy/Visualization.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="18" column="31" selection-start-line="18" selection-start-column="31" selection-end-line="18" selection-end-column="31" />
+          <folding>
+            <element signature="e#235#253#0" expanded="true" />
+            <element signature="e#1040#7113#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="uml://Python/#/home/miguel/PycharmProjects/GeMpy/GeMpy">
+      <provider selected="true" editor-type-id="UmlEditorProvider">
+        <state>
+          <ID>Python</ID>
+          <OriginalElement>#/home/miguel/PycharmProjects/GeMpy/GeMpy</OriginalElement>
+          <nodes>
+            <node x="1225.5" y="243.0">GeMpy.GeMpy_core.Interpolator</node>
+            <node x="552.0" y="220.0">GeMpy.GeMpy_core.DataPreparation</node>
+            <node x="859.0" y="162.0">GeMpy.External_communication.GeMpy_pyNoddy</node>
+            <node x="1253.0" y="162.0">GeMpy.GeMpy_core.Grid</node>
+            <node x="609.0" y="0.0">_collections_abc.Hashable</node>
+            <node x="0.0" y="162.0">GeMpy.GeMpy_core.DataManagement</node>
+            <node x="19.0" y="243.0">GeMpy.Visualization.GeoPlot_2D</node>
+            <node x="659.5" y="69.0">object</node>
+            <node x="315.0" y="162.0">GeMpy.GeMpy_core.GeMpy</node>
+          </nodes>
+          <notes />
+          <edges>
+            <edge source="object" target="_collections_abc.Hashable">
+              <point x="0.0" y="-15.5" />
+              <point x="0.0" y="15.5" />
+            </edge>
+            <edge source="GeMpy.GeMpy_core.DataPreparation" target="object">
+              <point x="0.0" y="-15.5" />
+              <point x="0.0" y="15.5" />
+            </edge>
+            <edge source="GeMpy.GeMpy_core.Interpolator" target="GeMpy.GeMpy_core.Grid">
+              <point x="0.0" y="-15.5" />
+              <point x="0.0" y="15.5" />
+            </edge>
+            <edge source="GeMpy.Visualization.GeoPlot_2D" target="GeMpy.GeMpy_core.DataManagement">
+              <point x="0.0" y="-15.5" />
+              <point x="0.0" y="15.5" />
+            </edge>
+            <edge source="GeMpy.GeMpy_core.Grid" target="object">
+              <point x="0.0" y="-15.5" />
+              <point x="1353.0" y="132.0" />
+              <point x="726.0" y="132.0" />
+              <point x="30.0" y="15.5" />
+            </edge>
+            <edge source="GeMpy.GeMpy_core.GeMpy" target="object">
+              <point x="0.0" y="-15.5" />
+              <point x="424.0" y="142.0" />
+              <point x="681.0" y="142.0" />
+              <point x="-15.0" y="15.5" />
+            </edge>
+            <edge source="GeMpy.External_communication.GeMpy_pyNoddy" target="object">
+              <point x="0.0" y="-15.5" />
+              <point x="1046.0" y="142.0" />
+              <point x="711.0" y="142.0" />
+              <point x="15.0" y="15.5" />
+            </edge>
+            <edge source="GeMpy.GeMpy_core.DataManagement" target="object">
+              <point x="0.0" y="-15.5" />
+              <point x="147.5" y="132.0" />
+              <point x="666.0" y="132.0" />
+              <point x="-30.0" y="15.5" />
+            </edge>
+          </edges>
+          <settings layout="Hierarchic Group" zoom="1.0" x="229.0" y="-5.0" />
+          <SelectedNodes>
+            <node>GeMpy.GeMpy_core.DataPreparation</node>
+          </SelectedNodes>
+          <Categories />
+          <SCOPE>All</SCOPE>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GeMpy/GeMpy_core.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="e#191#204#0" expanded="true" />
+            <element signature="e#2840#3615#0" expanded="false" />
+            <element signature="e#3655#4564#0" expanded="false" />
+            <element signature="e#5679#6229#0" expanded="false" />
+            <element signature="e#6995#7602#0" expanded="false" />
+            <element signature="e#7650#8213#0" expanded="false" />
+            <element signature="e#18452#42202#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -762,7 +838,7 @@
           <caret line="214" column="49" selection-start-line="214" selection-start-column="49" selection-end-line="214" selection-end-column="49" />
           <folding>
             <element signature="e#235#253#0" expanded="true" />
-            <element signature="e#1100#7173#0" expanded="false" />
+            <element signature="e#1040#7113#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -771,7 +847,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="72">
           <caret line="4" column="10" selection-start-line="4" selection-start-column="10" selection-end-line="4" selection-end-column="10" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -781,10 +856,12 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#191#204#0" expanded="true" />
-            <element signature="e#2064#2839#0" expanded="false" />
-            <element signature="e#2879#3788#0" expanded="false" />
-            <element signature="e#3862#4859#0" expanded="false" />
-            <element signature="e#4903#5453#0" expanded="false" />
+            <element signature="e#2840#3615#0" expanded="false" />
+            <element signature="e#3655#4564#0" expanded="false" />
+            <element signature="e#5679#6229#0" expanded="false" />
+            <element signature="e#6995#7602#0" expanded="false" />
+            <element signature="e#7650#8213#0" expanded="false" />
+            <element signature="e#18452#42202#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -795,7 +872,7 @@
           <caret line="164" column="49" selection-start-line="164" selection-start-column="49" selection-end-line="164" selection-end-column="51" />
           <folding>
             <element signature="e#235#253#0" expanded="true" />
-            <element signature="e#1100#7173#0" expanded="false" />
+            <element signature="e#1040#7113#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -804,7 +881,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="54">
           <caret line="3" column="6" selection-start-line="3" selection-start-column="6" selection-end-line="3" selection-end-column="6" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -814,10 +890,12 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="e#191#204#0" expanded="true" />
-            <element signature="e#2064#2839#0" expanded="false" />
-            <element signature="e#2879#3788#0" expanded="false" />
-            <element signature="e#3862#4859#0" expanded="false" />
-            <element signature="e#4903#5453#0" expanded="false" />
+            <element signature="e#2840#3615#0" expanded="false" />
+            <element signature="e#3655#4564#0" expanded="false" />
+            <element signature="e#5679#6229#0" expanded="false" />
+            <element signature="e#6995#7602#0" expanded="false" />
+            <element signature="e#7650#8213#0" expanded="false" />
+            <element signature="e#18452#42202#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -826,7 +904,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="18">
           <caret line="1" column="10" selection-start-line="1" selection-start-column="10" selection-end-line="1" selection-end-column="10" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -882,7 +959,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="72">
           <caret line="4" column="10" selection-start-line="4" selection-start-column="10" selection-end-line="4" selection-end-column="10" />
-          <folding />
         </state>
       </provider>
     </entry>
@@ -894,44 +970,29 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/GeMpy/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
-          <folding>
-            <element signature="e#91#114#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/GeMpy/Visualization.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="324">
-          <caret line="18" column="31" selection-start-line="18" selection-start-column="31" selection-end-line="18" selection-end-column="31" />
-          <folding>
-            <element signature="e#235#253#0" expanded="true" />
-            <element signature="e#1100#7173#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="uml://Python/#/home/miguel/PycharmProjects/GeMpy/GeMpy">
       <provider selected="true" editor-type-id="UmlEditorProvider">
         <state>
           <ID>Python</ID>
           <OriginalElement>#/home/miguel/PycharmProjects/GeMpy/GeMpy</OriginalElement>
           <nodes>
-            <node x="-128.0" y="433.0">GeMpy.Visualization.GeoPlot_2D</node>
-            <node x="237.75" y="0.0">_collections_abc.Hashable</node>
-            <node x="315.0" y="162.0">GeMpy.External_communication.GeMpy_pyNoddy</node>
+            <node x="1225.5" y="243.0">GeMpy.GeMpy_core.Interpolator</node>
+            <node x="552.0" y="220.0">GeMpy.GeMpy_core.DataPreparation</node>
+            <node x="859.0" y="162.0">GeMpy.External_communication.GeMpy_pyNoddy</node>
+            <node x="1253.0" y="162.0">GeMpy.GeMpy_core.Grid</node>
+            <node x="609.0" y="0.0">_collections_abc.Hashable</node>
             <node x="0.0" y="162.0">GeMpy.GeMpy_core.DataManagement</node>
-            <node x="287.25" y="81.0">object</node>
-            <node x="-269.0" y="283.0">GeMpy.GeMpy_core.Interpolator</node>
-            <node x="-241.5" y="97.0">GeMpy.GeMpy_core.Grid</node>
+            <node x="19.0" y="243.0">GeMpy.Visualization.GeoPlot_2D</node>
+            <node x="659.5" y="69.0">object</node>
+            <node x="315.0" y="162.0">GeMpy.GeMpy_core.GeMpy</node>
           </nodes>
           <notes />
           <edges>
             <edge source="object" target="_collections_abc.Hashable">
+              <point x="0.0" y="-15.5" />
+              <point x="0.0" y="15.5" />
+            </edge>
+            <edge source="GeMpy.GeMpy_core.DataPreparation" target="object">
               <point x="0.0" y="-15.5" />
               <point x="0.0" y="15.5" />
             </edge>
@@ -940,52 +1001,76 @@
               <point x="0.0" y="15.5" />
             </edge>
             <edge source="GeMpy.Visualization.GeoPlot_2D" target="GeMpy.GeMpy_core.DataManagement">
-              <point x="0.0" y="0.0" />
-              <point x="0.0" y="0.0" />
-            </edge>
-            <edge source="GeMpy.GeMpy_core.Grid" target="GeMpy.GeMpy_core.DataManagement">
               <point x="0.0" y="-15.5" />
               <point x="0.0" y="15.5" />
             </edge>
             <edge source="GeMpy.GeMpy_core.Grid" target="object">
-              <point x="0.0" y="0.0" />
-              <point x="0.0" y="0.0" />
-            </edge>
-            <edge source="GeMpy.Visualization.GeoPlot_2D" target="GeMpy.GeMpy_core.Interpolator">
               <point x="0.0" y="-15.5" />
-              <point x="0.0" y="15.5" />
+              <point x="1353.0" y="132.0" />
+              <point x="726.0" y="132.0" />
+              <point x="30.0" y="15.5" />
+            </edge>
+            <edge source="GeMpy.GeMpy_core.GeMpy" target="object">
+              <point x="0.0" y="-15.5" />
+              <point x="424.0" y="142.0" />
+              <point x="681.0" y="142.0" />
+              <point x="-15.0" y="15.5" />
             </edge>
             <edge source="GeMpy.External_communication.GeMpy_pyNoddy" target="object">
               <point x="0.0" y="-15.5" />
-              <point x="502.0" y="137.0" />
-              <point x="343.5" y="137.0" />
-              <point x="18.75" y="15.5" />
+              <point x="1046.0" y="142.0" />
+              <point x="711.0" y="142.0" />
+              <point x="15.0" y="15.5" />
             </edge>
             <edge source="GeMpy.GeMpy_core.DataManagement" target="object">
               <point x="0.0" y="-15.5" />
-              <point x="147.5" y="137.0" />
-              <point x="306.0" y="137.0" />
-              <point x="-18.75" y="15.5" />
+              <point x="147.5" y="132.0" />
+              <point x="666.0" y="132.0" />
+              <point x="-30.0" y="15.5" />
             </edge>
           </edges>
-          <settings layout="Hierarchic Group" zoom="1.0" x="-168.5" y="76.0" />
+          <settings layout="Hierarchic Group" zoom="1.0" x="229.0" y="-5.0" />
           <SelectedNodes>
-            <node>GeMpy.Visualization.GeoPlot_2D</node>
+            <node>GeMpy.GeMpy_core.DataPreparation</node>
           </SelectedNodes>
           <Categories />
+          <SCOPE>All</SCOPE>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GeMpy/__init__.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
+          <caret line="8" column="0" selection-start-line="8" selection-start-column="0" selection-end-line="8" selection-end-column="0" />
+          <folding>
+            <element signature="e#91#114#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/GeMpy/GeMpy_core.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="229">
-          <caret line="110" column="0" selection-start-line="110" selection-start-column="0" selection-end-line="110" selection-end-column="0" />
+        <state relative-caret-position="256">
+          <caret line="32" column="15" selection-start-line="32" selection-start-column="15" selection-end-line="32" selection-end-column="15" />
           <folding>
             <element signature="e#191#204#0" expanded="true" />
-            <element signature="e#2064#2839#0" expanded="false" />
-            <element signature="e#2879#3788#0" expanded="false" />
-            <element signature="e#3862#4859#0" expanded="false" />
-            <element signature="e#4903#5453#0" expanded="false" />
+            <element signature="e#2840#3615#0" expanded="false" />
+            <element signature="e#3655#4564#0" expanded="false" />
+            <element signature="e#5679#6229#0" expanded="false" />
+            <element signature="e#6995#7602#0" expanded="false" />
+            <element signature="e#7650#8213#0" expanded="false" />
+            <element signature="e#18452#42202#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/GeMpy/Visualization.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="615">
+          <caret line="40" column="0" selection-start-line="40" selection-start-column="0" selection-end-line="40" selection-end-column="0" />
+          <folding>
+            <element signature="e#235#253#0" expanded="true" />
+            <element signature="e#1040#7113#0" expanded="false" />
           </folding>
         </state>
       </provider>

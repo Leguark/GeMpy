@@ -13,24 +13,31 @@ import matplotlib.pyplot as plt
 
 # TODO: inherit pygeomod classes
 import sys, os
-from GeMpy.GeMpy_core import DataManagement, Interpolator
+from GeMpy.GeMpy_core import DataManagement
 
 
-class GeoPlot_2D(DataManagement):
+class PlotData(DataManagement, object):
     """Object Definition to perform Bayes Analysis"""
 
-    def __init__(self, **kwds):
-        """nothing"""
+    def __init__(self, _data, block=None, **kwargs):
+        """
 
+        :param _data:
+        :param kwds: potential field, block
+        """
+        self._data = _data
+        if block:
+            self.block = block
+
+        if 'potential_field':
+            self.plot_potential_field = kwargs['potential_field']
 
     # TODO planning the whole visualization scheme. Only data, potential field and block. 2D 3D? Improving the iteration
     # with pandas framework
 
-    def plot_block_section(self, cell_number=13):
 
-        plot_block = Interpolator.block.get_value().reshape(self.nx, self.ny, self.nz)
-        plt.imshow(plot_block[:, cell_number, :].T, origin="bottom", aspect="equal",
-                   extent=(self.xmin, self.xmax, self.zmin, self.zmax), interpolation="none")
+
+
 
     def plot_potential_field_2D(self, direction="x", cell_pos="center", **kwargs):
 
@@ -175,3 +182,51 @@ class GeoPlot_2D(DataManagement):
             plt.ylim(self.zmin, self.zmax)
             #  plt.margins(x = 0.1, y = 0.1)
             plt.title("Model Section. Direction: %s. Cell position: %s" % (direction, cell_pos))
+
+class PlotResults(PlotData, object):
+    """
+    """
+
+    def plot_block_section(self, cell_number=13, **kwargs):
+
+        plot_block = self.block.get_value().reshape(self._data.nx, self._data.ny, self._data.nz)
+        plt.imshow(plot_block[:, cell_number, :].T, origin="bottom", aspect="equal",
+                   extent=(self.xmin, self.xmax, self.zmin, self.zmax), interpolation="none", **kwargs)
+
+
+    def plot_potential_field(self, pos, **kwargs):
+        # Plotting orientations
+        plt.quiver(self.dips_position[:, 0], self.dips_position[:, 2], self.G_x, self.G_z, pivot="tail")
+
+        # Plotting interfaces
+        if self.layers.ndim == 2:
+            layer = self.layers
+            plt.plot(layer[:, 0], layer[:, 2], "o")
+
+            if "linear_interpolation" in kwargs:
+                plt.plot(layer[:, 0], layer[:, 2])
+        else:
+            for layer in self.layers:
+                plt.plot(layer[:, 0], layer[:, 2], "o")
+
+                if "linear_interpolation" in kwargs:
+                    plt.plot(layer[:, 0], layer[:, 2])
+
+        # Plotting potential field if is calculated
+        if hasattr(self, 'potential_field') and "potential_field" in kwargs:
+            grid_slice = self.potential_field[:, pos, :]
+            grid_slice = grid_slice.transpose()
+            plt.contour(grid_slice, extent=(self.xmin, self.xmax, self.zmin, self.zmax), **kwargs)
+            if 'colorbar' in kwargs:
+                plt.colorbar()
+        # General plot settings
+        plt.xlim(self.xmin, self.xmax)
+        plt.ylim(self.zmin, self.zmax)
+        #  plt.margins(x = 0.1, y = 0.1)
+        plt.title("Model Section. Direction: %s. Cell position: %s") #% (direction, cell_pos))
+
+    def export_vtk(self):
+        """
+        export vtk
+        :return:
+        """

@@ -14,7 +14,30 @@ import theano.tensor as T
 import numpy as np
 import sys, os
 import pandas as pn
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
+from GeMpy.Visualization import GeoPlot_2D
+
+
+class GeMpy(object):
+    def __init__(self, project_name='Default'):
+        # nothing
+        self.project_name = project_name
+        # TODO it has to be something better than None for this
+        self.Data = None
+        self.Grid = None
+        self.Interpolator = None
+        self.Plot = None
+
+    def import_data(self, *args, **kwargs):
+        self.Data = DataManagement(*args, **kwargs)
+        self.Plot = GeoPlot_2D()
+
+    def create_grid(self, grid_type="regular_3D"):
+        self.Grid = Grid(self.Data, grid_type=grid_type)
+
+    def set_interpolator(self):
+        self.Interpolator = Interpolator(self.Data, self.Grid)
+
 
 class DataManagement(object):
     """
@@ -23,11 +46,11 @@ class DataManagement(object):
     """
 
     # TODO: Data management using pandas, find an easy way to add values
-
+    # TODO: Probably at some point I will have to make an static and dynamic data classes
     def __init__(self, x_min, x_max, y_min, y_max, z_min, z_max,
                  nx=50, ny=50, nz=50,
-                 path_i=os.getcwd(), path_f=os.getcwd(),
-                 project_name='Default'):
+                 path_i=os.getcwd(), path_f=os.getcwd()
+                 ):
         """
         Initial parameters of the project
         :param x_min:
@@ -43,7 +66,7 @@ class DataManagement(object):
         :param path_f:
         """
 
-        self.project_name = project_name
+
         self.xmin = x_min
         self.xmax = x_max
         self.ymin = y_min
@@ -55,6 +78,7 @@ class DataManagement(object):
         self.ny = ny
         self.nz = nz
 
+        # TODO choose the default source of data. So far only
         self.Foliations = self.load_data_csv(data_type="foliations", path=path_f)
         self.Interfaces = self.load_data_csv(data_type="Interfaces", path=path_i)
 
@@ -63,12 +87,10 @@ class DataManagement(object):
         assert set(['X', 'Y', 'Z', 'dip', 'azimuth', 'polarity', 'formation']).issubset(self.Foliations.columns), \
             "One or more columns do not match with the expected values " + str(self.Foliations.columns)
 
-        self.G_x, self.G_y, self.G_z = self.calculate_gradient()
+    #    self.G_x, self.G_y, self.G_z = self.calculate_gradient()
 
         self.formations = self.set_formations()
-
-        self.Grid = Grid(self)
-
+        self.series = self.set_series()
     @staticmethod
     def load_data_csv(data_type, path=os.getcwd(), **kwargs):
 
@@ -145,20 +167,22 @@ class DataManagement(object):
         G_z = np.cos(np.deg2rad(self.Foliations["dip"])) * self.Foliations["polarity"]
         return G_x, G_y, G_z
 
-    def spatial_parameters(self):
+    def get_spatial_parameters(self):
         return self.xmax, self.xmin, self.ymax, self.ymin, self.zmax, self.zmin, self.nx, self.ny, self.nz
+
+    # TODO set new interface/set
 
 
 class Grid(object):
     """
     Class with set of functions to generate grids
     """
-    def __init__(self, raw_data, grid_type="regular_3D"):
+    def __init__(self, spatial_parameters, grid_type="regular_3D"):
         """
         Selection of grid type
         :param type: So far regular 3D or 2D grid
         """
-        self.raw_data = raw_data
+        self._grid_par = spatial_parameters
 
         if grid_type == "regular_3D":
             self.grid = self.create_regular_grid_3d()
@@ -174,8 +198,8 @@ class Grid(object):
         """
         try:
             g = np.meshgrid(
-                np.linspace(self.raw_data.xmin, self.raw_data.xmax, self.raw_data.nx, dtype="float32"),
-                np.linspace(self.raw_data.ymin, self.raw_data.ymax, self.raw_data.ny, dtype="float32"),
+                np.linspace(self._grid_par.xmin, self._grid_par.xmax, self._grid_par.nx, dtype="float32"),
+                np.linspace(self._grid_par.ymin, self._grid_par.ymax, self._grid_par.ny, dtype="float32"),
             )
             return np.vstack(map(np.ravel, g)).T.astype("float32")
         except AttributeError:
@@ -188,19 +212,18 @@ class Grid(object):
         """
 
         g = np.meshgrid(
-            np.linspace(self.raw_data.xmin, self.raw_data.xmax, self.raw_data.nx, dtype="float32"),
-            np.linspace(self.raw_data.ymin, self.raw_data.ymax, self.raw_data.ny, dtype="float32"),
-            np.linspace(self.raw_data.zmin, self.raw_data.zmax, self.raw_data.nz, dtype="float32"), indexing="ij"
+            np.linspace(self._grid_par.xmin, self._grid_par.xmax, self._grid_par.nx, dtype="float32"),
+            np.linspace(self._grid_par.ymin, self._grid_par.ymax, self._grid_par.ny, dtype="float32"),
+            np.linspace(self._grid_par.zmin, self._grid_par.zmax, self._grid_par.nz, dtype="float32"), indexing="ij"
         )
 
         return np.vstack(map(np.ravel, g)).T.astype("float32")
 
-
-class Interpolator(Grid):
+class DataPreparation(object):
     """
-    Class which contain all needed methods to perform potential field implicit modelling
+    Class that takes raw data and converts it into theano parameters
     """
-    def __init__(self, range_var=None, c_o=None, nugget_effect=0.01, u_grade=2, rescaling_factor=None):
+    def __init__(self, _data, _grid, range_var=None, c_o=None, nugget_effect=0.01, u_grade=2, rescaling_factor=None):
         """
         Basic interpolator parameters. Also here it is possible to change some flags of theano
         :param range_var: Range of the variogram, it is recommended the distance of the longest diagonal
@@ -213,16 +236,16 @@ class Interpolator(Grid):
         theano.config.compute_test_value = 'ignore'
 
         if not range_var:
-            range_var = np.sqrt((self.xmax-self.xmin)**2 +
-                                (self.ymax-self.ymin)**2 +
-                                (self.zmax-self.zmin)**2)
+            range_var = np.sqrt((_data.xmax-_data.xmin)**2 +
+                                (_data.ymax-_data.ymin)**2 +
+                                (_data.zmax-_data.zmin)**2)
         if not c_o:
             c_o = range_var**2/14/3
 
         # Creation of shared variables
-        self.nx_T = theano.shared(self.nx, "Resolution in x axis")
-        self.ny_T = theano.shared(self.ny, "Resolution in y axis")
-        self.nz_T = theano.shared(self.nz, "Resolution in z axis")
+        self.nx_T = theano.shared(_data.nx, "Resolution in x axis")
+        self.ny_T = theano.shared(_data.ny, "Resolution in y axis")
+        self.nz_T = theano.shared(_data.nz, "Resolution in z axis")
         self.a_T = theano.shared(range_var, "range", allow_downcast=True)
         self.c_o_T = theano.shared(c_o, "covariance at 0", allow_downcast=True)
         self.nugget_effect_grad_T = theano.shared(nugget_effect, "nugget effect of the grade", allow_downcast=True)
@@ -234,22 +257,34 @@ class Interpolator(Grid):
         # TODO: To be sure what is the mathematical meaning of this
 
         if not rescaling_factor:
-            max_coord = pn.concat([self.Foliations, self.Interfaces]).max()[:3]
-            min_coord = pn.concat([self.Foliations, self.Interfaces]).min()[:3]
+            max_coord = pn.concat([_data.Foliations, _data.Interfaces]).max()[:3]
+            min_coord = pn.concat([_data.Foliations, _data.Interfaces]).min()[:3]
             rescaling_factor = np.max(max_coord - min_coord)
 
         self.rescaling_factor_T = theano.shared(rescaling_factor, "rescaling factor", allow_downcast=True)
         self.n_formations_T = theano.shared(np.zeros(2), "Vector. Number of formations in the serie")
 
-        _universal_matrix = np.vstack((self.grid.T,
-                                       (self.grid ** 2).T,
-                                       self.grid[:, 0] * self.grid[:, 1],
-                                       self.grid[:, 0] * self.grid[:, 2],
-                                       self.grid[:, 1] * self.grid[:, 2]))
+        _universal_matrix = np.vstack((_grid.grid.T,
+                                       (_grid.grid ** 2).T,
+                                       _grid.grid[:, 0] * _grid.grid[:, 1],
+                                       _grid.grid[:, 0] * _grid.grid[:, 2],
+                                       _grid.grid[:, 1] * _grid.grid[:, 2]))
         self.universal_matrix_T = theano.shared(_universal_matrix + 1e-10, "universal matrix")
 
-        self.block = theano.shared(np.zeros_like(self.grid[:, 0]), "Final block")
-        self.grid_val_T = theano.shared(self.grid + 1e-10, "Positions of the points to interpolate")
+        self.block = theano.shared(np.zeros_like(_grid.grid[:, 0]), "Final block")
+        self.grid_val_T = theano.shared(_grid.grid + 1e-10, "Positions of the points to interpolate")
+
+
+class Interpolator(DataPreparation):
+    """
+    Class which contain all needed methods to perform potential field implicit modelling
+    """
+    def __init__(self, _data, _grid):
+        DataPreparation.__init__(self, _data, _grid)
+        self._data = _data
+        self._grid = _grid
+
+        self.theano_compilation_3D()
 
     def _select_serie(self, series_name=0):
         """
@@ -257,23 +292,30 @@ class Interpolator(Grid):
         :param series_name: name or argument of the serie. Default first of the list
         :return: formations of a given serie in string separeted by |
         """
-        if type(series_name) == int:
-            formations_in_serie = "|".join(self.series.ix[:, series_name].drop_duplicates())
+        if type(series_name) == int or type(series_name) == np.int64:
+            _formations_in_serie = "|".join(self._data.series.ix[:, series_name].drop_duplicates())
         elif type(series_name) == str:
-            formations_in_serie = "|".join(self.series[series_name].drop_duplicates())
-        return formations_in_serie
+            _formations_in_serie = "|".join(self._data.series[series_name].drop_duplicates())
+        return _formations_in_serie
 
     def compute_block_model(self, series_number="all", verbose=0):
 
         if series_number == "all":
-            series_number = np.arange(len(self.series))
+            series_number = np.arange(len(self._data.series.columns))
         for i in series_number:
             formations_in_serie = self._select_serie(i)
-            n_formation = np.squeeze(np.where(np.in1d(self.formations, self.series.ix[:, i])))+1
+            n_formation = np.squeeze(np.where(np.in1d(self._data.formations, self._data.series.ix[:, i])))+1
             if verbose > 0:
                 print(n_formation)
             self._aux_computations_block_model(formations_in_serie, np.array(n_formation, ndmin=1),
                                                verbose=verbose)
+
+    def compute_potential_field(self, series_name=0, verbose=0):
+
+        assert series_name is not "all", "Compute potential field only returns one potential field at the time"
+        formations_in_serie = self._select_serie(series_name)
+        self._aux_computations_potential_field(formations_in_serie, verbose=verbose)
+
 
     def _aux_computations_block_model(self, for_in_ser, n_formation, verbose=0):
 
@@ -283,16 +325,16 @@ class Interpolator(Grid):
             if verbose > 0:
                 print(yet_simulated, (yet_simulated == 0).sum())
         except AttributeError:
-            yet_simulated = np.ones_like(self.grid[:, 0], dtype="int8")
+            yet_simulated = np.ones_like(self._data.grid[:, 0], dtype="int8")
             print("I am in the except")
         # TODO: change [:,:3] that is positional based for XYZ so is more consistent
-        dips_position = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
-        dip_angles = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["dip"].as_matrix()
-        azimuth = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["azimuth"].as_matrix()
-        polarity = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["polarity"].as_matrix()
+        dips_position = self._data.Foliations[self._data.Foliations["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
+        dip_angles = self._data.Foliations[self._data.Foliations["formation"].str.contains(for_in_ser)]["dip"].as_matrix()
+        azimuth = self._data.Foliations[self._data.Foliations["formation"].str.contains(for_in_ser)]["azimuth"].as_matrix()
+        polarity = self._data.Foliations[self._data.Foliations["formation"].str.contains(for_in_ser)]["polarity"].as_matrix()
 
         if for_in_ser.count("|") == 0:
-            layers = self.Interfaces[self.Interfaces["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
+            layers = self._data.Interfaces[self._data.Interfaces["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
             rest_layer_points = layers[1:]
             # TODO self.n_formation probably should not be self
             self.n_formations_T.set_value(np.array(rest_layer_points.shape[0], ndmin=1))
@@ -301,7 +343,7 @@ class Interpolator(Grid):
             # TODO: This is ugly
             layers_list = []
             for formation in for_in_ser.split("|"):
-                layers_list.append(self.Interfaces[self.Interfaces["formation"] == formation].as_matrix()[:, :3])
+                layers_list.append(self._data.Interfaces[self._data.Interfaces["formation"] == formation].as_matrix()[:, :3])
             layers = np.asarray(layers_list)
 
             rest_layer_points = layers[0][1:]
@@ -316,37 +358,31 @@ class Interpolator(Grid):
             print("The serie formations are %s" % for_in_ser)
             if verbose > 1:
                 print("The formations are: \n"
-                      "Layers ", self.Interfaces[self.Interfaces["formation"].str.contains(for_in_ser)], " \n "
+                      "Layers ", self._data.Interfaces[self._data.Interfaces["formation"].str.contains(for_in_ser)], " \n "
                                                                                                          "Foliations ",
-                      self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)])
+                      self._data.Foliations[self._data.Foliations["formation"].str.contains(for_in_ser)])
 
         # self.grad is none so far. I have it for further research in the calculation of the Jacobian matrix
         self.grad = self._block_export(dips_position, dip_angles, azimuth, polarity,
                                       rest_layer_points, ref_layer_points,
                                       n_formation, yet_simulated)
 
-    def compute_potential_field(self, series_name=0, verbose=0):
-
-        assert series_name is not "all", "Compute potential field only returns one potential field at the time"
-        formations_in_serie = self._select_serie(series_name)
-        self._aux_computations_potential_field(formations_in_serie, verbose=verbose)
-
     def _aux_computations_potential_field(self,  for_in_ser, verbose=0):
 
         # TODO: change [:,:3] that is positional based for XYZ so is more consistent
-        dips_position = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
-        dip_angles = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["dip"].as_matrix()
-        azimuth = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["azimuth"].as_matrix()
-        polarity = self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)]["polarity"].as_matrix()
+        dips_position = self._data.Foliations[self._data.Foliations["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
+        dip_angles = self._data.Foliations[self._data.Foliations["formation"].str.contains(for_in_ser)]["dip"].as_matrix()
+        azimuth = self._data.Foliations[self._data.Foliations["formation"].str.contains(for_in_ser)]["azimuth"].as_matrix()
+        polarity = self._data.Foliations[self._data.Foliations["formation"].str.contains(for_in_ser)]["polarity"].as_matrix()
 
         if for_in_ser.count("|") == 0:
-            layers = self.Interfaces[self.Interfaces["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
+            layers = self._data.Interfaces[self._data.Interfaces["formation"].str.contains(for_in_ser)].as_matrix()[:, :3]
             rest_layer_points = layers[1:]
             ref_layer_points = np.tile(layers[0], (np.shape(layers)[0] - 1, 1))
         else:
             layers_list = []
             for formation in for_in_ser.split("|"):
-                layers_list.append(self.Interfaces[self.Interfaces["formation"] == formation].as_matrix()[:, :3])
+                layers_list.append(self._data.Interfaces[self._data.Interfaces["formation"] == formation].as_matrix()[:, :3])
             layers = np.asarray(layers_list)
             rest_layer_points = np.vstack((i[1:] for i in layers))
             ref_layer_points = np.vstack((np.tile(i[0], (np.shape(i)[0] - 1, 1)) for i in layers))
@@ -355,15 +391,15 @@ class Interpolator(Grid):
             print("The serie formations are %s" % for_in_ser)
             if verbose > 1:
                 print("The formations are: \n"
-                      "Layers ", self.Interfaces[self.Interfaces["formation"].str.contains(for_in_ser)], " \n "
+                      "Layers ", self._data.Interfaces[self._data.Interfaces["formation"].str.contains(for_in_ser)], " \n "
                                                                                                     "Foliations ",
-                      self.Foliations[self.Foliations["formation"].str.contains(for_in_ser)])
+                      self._data.Foliations[self._data.Foliations["formation"].str.contains(for_in_ser)])
 
         self.Z_x, G_x, G_y, G_z, self.potential_interfaces, C, DK = self._interpolate(
             dips_position, dip_angles, azimuth, polarity,
             rest_layer_points, ref_layer_points)[:]
 
-        self.potential_field = self.Z_x.reshape(self.nx, self.ny, self.nz)
+        self.potential_field = self.Z_x.reshape(self._data.nx, self._data.ny, self._data.nz)
 
         if verbose > 2:
             print("Gradients: ", G_x, G_y, G_z)
@@ -768,7 +804,7 @@ class Interpolator(Grid):
         # Theano function to calculate a potential field
         self._interpolate = theano.function(
             [dips_position, dip_angles, azimuth, polarity, rest_layer_points, ref_layer_points,
-             theano.In(yet_simulated, value=np.ones_like(self.grid[:, 0]))],
+             theano.In(yet_simulated, value=np.ones_like(self._grid.grid[:, 0]))],
             [Z_x, G_x, G_y, G_z, potential_field_interfaces, C_matrix, DK_parameters],
             on_unused_input="warn", profile=True, allow_input_downcast=True)
 
@@ -830,11 +866,6 @@ class Interpolator(Grid):
                                              ref_layer_points, n_formation, yet_simulated], None,
                                             updates=[(self.block,  potential_field_contribution)],
                                             on_unused_input="warn", profile=True, allow_input_downcast=True)
-
-
-
-
-
 
 
 
