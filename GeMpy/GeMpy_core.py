@@ -14,8 +14,8 @@ import theano.tensor as T
 import numpy as np
 import sys, os
 import pandas as pn
-import matplotlib.pyplot as plt
-from GeMpy.Visualization import GeoPlot_2D
+
+from Visualization import PlotData
 
 
 class GeMpy(object):
@@ -30,13 +30,19 @@ class GeMpy(object):
 
     def import_data(self, *args, **kwargs):
         self.Data = DataManagement(*args, **kwargs)
-        self.Plot = GeoPlot_2D()
+        self.Plot = PlotData(self.Data)
 
     def create_grid(self, grid_type="regular_3D"):
         self.Grid = Grid(self.Data, grid_type=grid_type)
 
     def set_interpolator(self):
         self.Interpolator = Interpolator(self.Data, self.Grid)
+        self.Plot = PlotData(self.Data, block=self.Interpolator.block)
+
+    def update_data(self, *args, **kwargs):
+        self.Data = DataManagement(*args, **kwargs)
+        self.Plot = PlotData(self.Data, block=self.Interpolator.block,
+                             potential_field=self.Interpolator.potential_field)
 
 
 class DataManagement(object):
@@ -82,15 +88,16 @@ class DataManagement(object):
         self.Foliations = self.load_data_csv(data_type="foliations", path=path_f)
         self.Interfaces = self.load_data_csv(data_type="Interfaces", path=path_i)
 
-        assert set(['X','Y', 'Z', 'formation']).issubset(self.Interfaces.columns), \
+        assert set(['X', 'Y', 'Z', 'formation']).issubset(self.Interfaces.columns), \
             "One or more columns do not match with the expected values " + str(self.Interfaces.columns)
         assert set(['X', 'Y', 'Z', 'dip', 'azimuth', 'polarity', 'formation']).issubset(self.Foliations.columns), \
             "One or more columns do not match with the expected values " + str(self.Foliations.columns)
 
-    #    self.G_x, self.G_y, self.G_z = self.calculate_gradient()
+        self.calculate_gradient()
 
         self.formations = self.set_formations()
         self.series = self.set_series()
+
     @staticmethod
     def load_data_csv(data_type, path=os.getcwd(), **kwargs):
 
@@ -152,6 +159,8 @@ class DataManagement(object):
         assert np.count_nonzero(np.unique(_series.values)) is len(self.formations), \
             "series_distribution must have the same number of values as number of formations %s." \
             % self.formations
+
+        self.series = _series
         return _series
 
     def calculate_gradient(self):
@@ -160,12 +169,11 @@ class DataManagement(object):
         :return: Components xyz of the unity vector.
         """
 
-        G_x = np.sin(np.deg2rad(self.Foliations["dip"])) * \
+        self.Foliations['G_x'] = np.sin(np.deg2rad(self.Foliations["dip"])) * \
             np.sin(np.deg2rad(self.Foliations["azimuth"])) * self.Foliations["polarity"]
-        G_y = np.sin(np.deg2rad(self.Foliations["dip"])) * \
+        self.Foliations['G_y'] = np.sin(np.deg2rad(self.Foliations["dip"])) * \
             np.cos(np.deg2rad(self.Foliations["azimuth"])) * self.Foliations["polarity"]
-        G_z = np.cos(np.deg2rad(self.Foliations["dip"])) * self.Foliations["polarity"]
-        return G_x, G_y, G_z
+        self.Foliations['G_z'] = np.cos(np.deg2rad(self.Foliations["dip"])) * self.Foliations["polarity"]
 
     def get_spatial_parameters(self):
         return self.xmax, self.xmin, self.ymax, self.ymin, self.zmax, self.zmin, self.nx, self.ny, self.nz
@@ -219,28 +227,105 @@ class Grid(object):
 
         return np.vstack(map(np.ravel, g)).T.astype("float32")
 
-class DataPreparation(object):
-    """
-    Class that takes raw data and converts it into theano parameters
-    """
-    def __init__(self, _data, _grid, range_var=None, c_o=None, nugget_effect=0.01, u_grade=2, rescaling_factor=None):
-        """
-        Basic interpolator parameters. Also here it is possible to change some flags of theano
-        :param range_var: Range of the variogram, it is recommended the distance of the longest diagonal
-        :param c_o: Sill of the variogram
-        """
-        # TODO: update Docstring
+# class DataPreparation(object):
+#     """
+#     Class that takes raw data and converts it into theano parameters
+#     """
+#     def __init__(self, _data, _grid, range_var=None, c_o=None, nugget_effect=0.01, u_grade=2, rescaling_factor=None):
+#         """
+#         Basic interpolator parameters. Also here it is possible to change some flags of theano
+#         :param range_var: Range of the variogram, it is recommended the distance of the longest diagonal
+#         :param c_o: Sill of the variogram
+#         """
+#         # TODO: update Docstring
+#
+#         theano.config.optimizer = 'None'
+#         theano.config.exception_verbosity = 'high'
+#         theano.config.compute_test_value = 'ignore'
+#
+#         if not range_var:
+#             range_var = np.sqrt((_data.xmax-_data.xmin)**2 +
+#                                 (_data.ymax-_data.ymin)**2 +
+#                                 (_data.zmax-_data.zmin)**2)
+#         if not c_o:
+#             c_o = range_var**2/14/3
+#
+#         # Creation of shared variables
+#         self.nx_T = theano.shared(_data.nx, "Resolution in x axis")
+#         self.ny_T = theano.shared(_data.ny, "Resolution in y axis")
+#         self.nz_T = theano.shared(_data.nz, "Resolution in z axis")
+#         self.a_T = theano.shared(range_var, "range", allow_downcast=True)
+#         self.c_o_T = theano.shared(c_o, "covariance at 0", allow_downcast=True)
+#         self.nugget_effect_grad_T = theano.shared(nugget_effect, "nugget effect of the grade", allow_downcast=True)
+#         assert (0 <= u_grade <= 2)
+#         if u_grade == 0:
+#             self.u_grade_T = theano.shared(u_grade, "grade of the universal drift", allow_downcast=True)
+#         else:
+#             self.u_grade_T = theano.shared(3**u_grade, allow_downcast=True)
+#         # TODO: To be sure what is the mathematical meaning of this
+#
+#         if not rescaling_factor:
+#             max_coord = pn.concat([_data.Foliations, _data.Interfaces]).max()[:3]
+#             min_coord = pn.concat([_data.Foliations, _data.Interfaces]).min()[:3]
+#             rescaling_factor = np.max(max_coord - min_coord)
+#
+#         self.rescaling_factor_T = theano.shared(rescaling_factor, "rescaling factor", allow_downcast=True)
+#         self.n_formations_T = theano.shared(np.zeros(2), "Vector. Number of formations in the serie")
+#
+#         _universal_matrix = np.vstack((_grid.grid.T,
+#                                        (_grid.grid ** 2).T,
+#                                        _grid.grid[:, 0] * _grid.grid[:, 1],
+#                                        _grid.grid[:, 0] * _grid.grid[:, 2],
+#                                        _grid.grid[:, 1] * _grid.grid[:, 2]))
+#         self.universal_matrix_T = theano.shared(_universal_matrix + 1e-10, "universal matrix")
+#
+#         self.block = theano.shared(np.zeros_like(_grid.grid[:, 0]), "Final block")
+#         self.grid_val_T = theano.shared(_grid.grid + 1e-10, "Positions of the points to interpolate")
 
-        theano.config.optimizer = 'None'
+
+class Interpolator(object):
+    """
+    Class which contain all needed methods to perform potential field implicit modelling
+    """
+    def __init__(self, _data, _grid, *args):#range_var=None, c_o=None, nugget_effect=0.01, u_grade=2, rescaling_factor=None):
+
+        theano.config.optimizer = 'fast_compile'
         theano.config.exception_verbosity = 'high'
         theano.config.compute_test_value = 'ignore'
 
+        self._data = _data
+        self._grid = _grid
+
+        self._set_constant_parameteres(_data, _grid, *args)
+        self.theano_compilation_3D()
+
+    def _select_serie(self, series_name=0):
+        """
+        Return the formations of a given serie in string
+        :param series_name: name or argument of the serie. Default first of the list
+        :return: formations of a given serie in string separeted by |
+        """
+        if type(series_name) == int or type(series_name) == np.int64:
+            _formations_in_serie = "|".join(self._data.series.ix[:, series_name].drop_duplicates())
+        elif type(series_name) == str:
+            _formations_in_serie = "|".join(self._data.series[series_name].drop_duplicates())
+        return _formations_in_serie
+
+    def _set_constant_parameteres(self, _data, _grid, range_var=None, c_o=None,
+                                  nugget_effect=0.01, u_grade=2, rescaling_factor=None):
+        """
+               Basic interpolator parameters. Also here it is possible to change some flags of theano
+               :param range_var: Range of the variogram, it is recommended the distance of the longest diagonal
+               :param c_o: Sill of the variogram
+               """
+        # TODO: update Docstring
+
         if not range_var:
-            range_var = np.sqrt((_data.xmax-_data.xmin)**2 +
-                                (_data.ymax-_data.ymin)**2 +
-                                (_data.zmax-_data.zmin)**2)
+            range_var = np.sqrt((_data.xmax - _data.xmin) ** 2 +
+                                (_data.ymax - _data.ymin) ** 2 +
+                                (_data.zmax - _data.zmin) ** 2)
         if not c_o:
-            c_o = range_var**2/14/3
+            c_o = range_var ** 2 / 14 / 3
 
         # Creation of shared variables
         self.nx_T = theano.shared(_data.nx, "Resolution in x axis")
@@ -253,7 +338,7 @@ class DataPreparation(object):
         if u_grade == 0:
             self.u_grade_T = theano.shared(u_grade, "grade of the universal drift", allow_downcast=True)
         else:
-            self.u_grade_T = theano.shared(3**u_grade, allow_downcast=True)
+            self.u_grade_T = theano.shared(3 ** u_grade, allow_downcast=True)
         # TODO: To be sure what is the mathematical meaning of this
 
         if not rescaling_factor:
@@ -274,30 +359,6 @@ class DataPreparation(object):
         self.block = theano.shared(np.zeros_like(_grid.grid[:, 0]), "Final block")
         self.grid_val_T = theano.shared(_grid.grid + 1e-10, "Positions of the points to interpolate")
 
-
-class Interpolator(DataPreparation):
-    """
-    Class which contain all needed methods to perform potential field implicit modelling
-    """
-    def __init__(self, _data, _grid):
-        DataPreparation.__init__(self, _data, _grid)
-        self._data = _data
-        self._grid = _grid
-
-        self.theano_compilation_3D()
-
-    def _select_serie(self, series_name=0):
-        """
-        Return the formations of a given serie in string
-        :param series_name: name or argument of the serie. Default first of the list
-        :return: formations of a given serie in string separeted by |
-        """
-        if type(series_name) == int or type(series_name) == np.int64:
-            _formations_in_serie = "|".join(self._data.series.ix[:, series_name].drop_duplicates())
-        elif type(series_name) == str:
-            _formations_in_serie = "|".join(self._data.series[series_name].drop_duplicates())
-        return _formations_in_serie
-
     def compute_block_model(self, series_number="all", verbose=0):
 
         if series_number == "all":
@@ -315,7 +376,6 @@ class Interpolator(DataPreparation):
         assert series_name is not "all", "Compute potential field only returns one potential field at the time"
         formations_in_serie = self._select_serie(series_name)
         self._aux_computations_potential_field(formations_in_serie, verbose=verbose)
-
 
     def _aux_computations_block_model(self, for_in_ser, n_formation, verbose=0):
 
