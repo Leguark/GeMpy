@@ -13,67 +13,23 @@ import matplotlib.pyplot as plt
 
 # TODO: inherit pygeomod classes
 import sys, os
-sys.path.append("/home/bl3/PycharmProjects/pygeomod/")
-#from home/bl3/PycharmProjects/pygeomod/pygeomod import geogrid
+from .GeMpy_core import DataManagement, Interpolator
 
-class GeoPlot():
+class GeoPlot_2D(Interpolator):
     """Object Definition to perform Bayes Analysis"""
 
     def __init__(self, **kwds):
         """nothing"""
 
-    def set_basename(self, name):
-        """Set basename for grid exports, etc.
 
-        **Arguments**:
-            - *name* = string: basename
-        """
-        self.basename = name
+    # TODO planning the whole visualization scheme. Only data, potential field and block. 2D 3D? Improving the iteration
+    # with pandas framework
 
-    def set_extent(self,x_min, x_max, y_min, y_max, z_min, z_max):
-        """Set basename for grid exports, etc.
+    def plot_block_section(self, cell_number=13):
 
-            **Arguments**:
-                - *3-D coordinates* = float: dimensions of the domain
-            """
-        self.xmin = x_min
-        self.xmax = x_max
-        self.ymin = y_min
-        self.ymax = y_max
-        self.zmin = z_min
-        self.zmax = z_max
-
-    def set_resolutions(self, nx, ny, nz):
-        """
-
-        :param nx: Resolution in x direction
-        :param ny: Resolution in y direction
-        :param nz: Resolution in z direction
-        :return: The self values
-        """
-
-        self.nx ,self.ny, self.nz = nx, ny, nz
-
-    def set_layers(self, layers):
-
-        """ Generate a 3-D dimensional array where:
-         - axis 0 contains xyz coordinates of every points.
-         - axis 1 every point per layer
-         - axis 2 every layer
-        :param layers: 2D numpy array of every layer
-        :return: 3D numpy array encapsulating every layer
-        """
-
-        self.layers = np.asarray(layers)
-
-    def calculate_gradient(self):
-        """ Calculate the gradient vector of module 1 given dip and azimuth
-
-        :return: Components xyz of the unity vector.
-        """
-        self.G_x = np.sin(np.deg2rad(self.dips_angles)) * np.sin(np.deg2rad(self.azimuths)) * self.polarity
-        self.G_z = np.cos(np.deg2rad(self.dips_angles)) * self.polarity
-        self.G_y = np.sin(np.deg2rad(self.dips_angles)) * np.cos(np.deg2rad(self.azimuths)) * self.polarity
+        plot_block = self.block.get_value().reshape(self.nx, self.ny, self.nz)
+        plt.imshow(plot_block[:, cell_number, :].T, origin="bottom", aspect="equal",
+                   extent=(self.xmin, self.xmax, self.zmin, self.zmax), interpolation="none")
 
     def plot_potential_field_2D(self, direction="x", cell_pos="center", **kwargs):
 
@@ -109,10 +65,11 @@ class GeoPlot():
         figsize = kwargs.get('figsize', (8, 4))
         geomod_coord = kwargs.get('geomod_coord', False)
         contour = kwargs.get('contour', False)
+        contour_lines = kwargs.get('contour_lines', 10)
         linewidth = kwargs.get("linewidth", 1)
         levels = kwargs.get("plot_layer", None)
         kwargs.get("linear_interpolation", False)
-
+        kwargs.get('potential_field', True)
 
         if not "ax" in kwargs:
             colorbar = kwargs.get('colorbar', True)
@@ -127,7 +84,7 @@ class GeoPlot():
         if direction == "y":
 
             plt.xlabel("x")
-            plt.ylabel("y")
+            plt.ylabel("z")
 
             if type(cell_pos) == str:
                 # decipher cell position
@@ -143,21 +100,77 @@ class GeoPlot():
 
 
             # Plotting orientations
-            plt.quiver(self.dips[:, 0], self.dips[:, 2], self.G_x, self.G_z, pivot="tail")
+            plt.quiver(self.dips_position[:, 0], self.dips_position[:, 2], self.G_x, self.G_z, pivot="tail")
 
             # Plotting interfaces
-            for layer in self.layers:
+            if self.layers.ndim == 2:
+                layer = self.layers
                 plt.plot(layer[:, 0], layer[:, 2], "o")
 
                 if "linear_interpolation" in kwargs:
                     plt.plot(layer[:, 0], layer[:, 2])
+            else:
+                for layer in self.layers:
+                    plt.plot(layer[:, 0], layer[:, 2], "o")
+
+                    if "linear_interpolation" in kwargs:
+                        plt.plot(layer[:, 0], layer[:, 2])
 
             # Plotting potential field if is calculated
-            if hasattr(self, 'potential_field'):
+            if hasattr(self, 'potential_field') and "potential_field" in kwargs:
+                grid_slice = self.potential_field[:, pos, :]
+                grid_slice = grid_slice.transpose()
+                plt.contour(grid_slice, contour_lines, extent=(self.xmin, self.xmax, self.zmin, self.zmax), **kwargs)
+                if colorbar:
+                    plt.colorbar()
+            # General plot settings
+            plt.xlim(self.xmin, self.xmax)
+            plt.ylim(self.zmin, self.zmax)
+          #  plt.margins(x = 0.1, y = 0.1)
+            plt.title("Model Section. Direction: %s. Cell position: %s" % (direction,cell_pos))
+
+        if direction == "x":
+
+            plt.xlabel("y")
+            plt.ylabel("z")
+
+            if type(cell_pos) == str:
+                # decipher cell position
+                if cell_pos == 'center' or cell_pos == 'centre':
+                    pos = self.nx / 2
+                elif cell_pos == 'min':
+                    pos = 0
+                elif cell_pos == 'max':
+                    pos = self.nx
+            else:
+                pos = cell_pos
+
+            # Plotting orientations
+            plt.quiver(self.dips_position[:, 1], self.dips_position[:, 2], self.G_y, self.G_z, pivot="tail")
+
+            # Plotting interfaces
+            if self.layers.ndim == 2:
+                layer = self.layers
+                plt.plot(layer[:, 1], layer[:, 2], "o")
+
+                if "linear_interpolation" in kwargs:
+                    plt.plot(layer[:, 1], layer[:, 2])
+            else:
+                for layer in self.layers:
+                    plt.plot(layer[:, 1], layer[:, 2], "o")
+
+                    if "linear_interpolation" in kwargs:
+                        plt.plot(layer[:, 1], layer[:, 2])
+
+            # Plotting potential field if is calculated
+            if hasattr(self, 'potential_field') and "potential_field" in kwargs:
                 grid_slice = self.potential_field[pos, :, :]
                 grid_slice = grid_slice.transpose()
-                plt.contour(grid_slice, 10, extent=(self.xmin, self.xmax, self.zmin, self.zmax))
-
+                plt.contour(grid_slice, contour_lines, extent=(self.ymin, self.ymax, self.zmin, self.zmax), **kwargs)
+                if colorbar:
+                    plt.colorbar()
             # General plot settings
-            plt.margins(x = 0.1, y = 0.1)
-            plt.title("Model Section. Direction: %s. Cell position: %s" % (direction,cell_pos))
+            plt.xlim(self.ymin, self.ymax)
+            plt.ylim(self.zmin, self.zmax)
+            #  plt.margins(x = 0.1, y = 0.1)
+            plt.title("Model Section. Direction: %s. Cell position: %s" % (direction, cell_pos))

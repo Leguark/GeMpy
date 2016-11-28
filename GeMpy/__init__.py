@@ -4,5 +4,8 @@ Created on 21/10/2016
 @author: Miguel de la Varga
 '''
 
+#import GeMpy.GeMpy_core
+#import GeMpy.Visualization
+
 if __name__ == '__main__':
     pass
