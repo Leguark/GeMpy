@@ -37,7 +37,8 @@ class GeMpy(object):
 
     def set_interpolator(self):
         self.Interpolator = Interpolator(self.Data, self.Grid)
-        self.Plot = PlotData(self.Data, block=self.Interpolator.block)
+        self.Plot = PlotData(self.Data, block=self.Interpolator.block,
+                             potential_field=self.Interpolator.potential_fields)
 
     def update_data(self, *args, **kwargs):
         self.Data = DataManagement(*args, **kwargs)
@@ -72,7 +73,6 @@ class DataManagement(object):
         :param path_f:
         """
 
-
         self.xmin = x_min
         self.xmax = x_max
         self.ymin = y_min
@@ -93,10 +93,9 @@ class DataManagement(object):
         assert set(['X', 'Y', 'Z', 'dip', 'azimuth', 'polarity', 'formation']).issubset(self.Foliations.columns), \
             "One or more columns do not match with the expected values " + str(self.Foliations.columns)
 
-        self.calculate_gradient()
-
         self.formations = self.set_formations()
         self.series = self.set_series()
+        self.calculate_gradient()
 
     @staticmethod
     def load_data_csv(data_type, path=os.getcwd(), **kwargs):
@@ -159,6 +158,9 @@ class DataManagement(object):
         assert np.count_nonzero(np.unique(_series.values)) is len(self.formations), \
             "series_distribution must have the same number of values as number of formations %s." \
             % self.formations
+
+        self.Interfaces["series"] = [(i == _series).sum().argmax() for i in self.Interfaces["formation"]]
+        self.Foliations["series"] = [(i == _series).sum().argmax() for i in self.Foliations["formation"]]
 
         self.series = _series
         return _series
@@ -299,6 +301,8 @@ class Interpolator(object):
         self._set_constant_parameteres(_data, _grid, *args)
         self.theano_compilation_3D()
 
+        self.potential_fields = [self.compute_potential_field(i)for i in np.arange(len(self._data.series.columns))]
+
     def _select_serie(self, series_name=0):
         """
         Return the formations of a given serie in string
@@ -375,7 +379,7 @@ class Interpolator(object):
 
         assert series_name is not "all", "Compute potential field only returns one potential field at the time"
         formations_in_serie = self._select_serie(series_name)
-        self._aux_computations_potential_field(formations_in_serie, verbose=verbose)
+        return self._aux_computations_potential_field(formations_in_serie, verbose=verbose)
 
     def _aux_computations_block_model(self, for_in_ser, n_formation, verbose=0):
 
@@ -459,13 +463,15 @@ class Interpolator(object):
             dips_position, dip_angles, azimuth, polarity,
             rest_layer_points, ref_layer_points)[:]
 
-        self.potential_field = self.Z_x.reshape(self._data.nx, self._data.ny, self._data.nz)
+        potential_field = self.Z_x.reshape(self._data.nx, self._data.ny, self._data.nz)
 
         if verbose > 2:
             print("Gradients: ", G_x, G_y, G_z)
             print("Dual Kriging weights: ", DK)
         if verbose > 3:
             print("C_matrix: ", C)
+
+        return potential_field
 
     def theano_compilation_3D(self):
         """
