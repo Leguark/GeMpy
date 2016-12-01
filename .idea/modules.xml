@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/GeMpy.iml" filepath="$PROJECT_DIR$/.idea/GeMpy.iml" />
       <module fileurl="file://$PROJECT_DIR$/../GeMpy_rwth/.idea/GeMpy_rwth.iml" filepath="$PROJECT_DIR$/../GeMpy_rwth/.idea/GeMpy_rwth.iml" />
+      <module fileurl="file://$USER_HOME$/Papers/.idea/Papers.iml" filepath="$USER_HOME$/Papers/.idea/Papers.iml" />
     </modules>
   </component>
 </project>

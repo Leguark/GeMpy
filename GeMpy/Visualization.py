@@ -108,7 +108,7 @@ class PlotData(object):
         plot_block = self._block.get_value().reshape(self._data.nx, self._data.ny, self._data.nz)
         _a, _b, _c, extent_val, x, y = self._slice(direction, cell_number)[:-2]
 
-        plt.imshow(plot_block[_a, _b, _c].T, origin="bottom", aspect="equal", cmap="viridis",
+        plt.imshow(plot_block[_a, _b, _c].T, origin="bottom", cmap="viridis",
                    extent=extent_val,
                    interpolation="none", **kwargs)
         plt.xlabel(x)

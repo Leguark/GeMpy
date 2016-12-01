@@ -50,15 +50,15 @@ class GeMpy(object):
         self.Data = DataManagement(*args, **kwargs)
         self.Plot = PlotData(self.Data)
 
-    def create_grid(self, grid_type="regular_3D"):
+    def create_grid(self, grid_type="regular_3D", **kwargs):
         """
         Method to initialize the class grid. So far is really simple and only has the regular grid type
         :param grid_type: str: regular_3D or regular_2D (I am not even sure if regular 2D still working)
         :return: self.Grid
         """
-        self.Grid = Grid(self.Data, grid_type=grid_type)
+        self.Grid = Grid(self.Data, grid_type=grid_type, **kwargs)
 
-    def set_interpolator(self, *args):
+    def set_interpolator(self, *args, **kwargs):
         """
         Method to initialize the class interpolator. All the constant parameters for the interpolation can be passed
         as args, otherwise they will take the default value (TODO: documentation of the dafault values)
@@ -69,10 +69,13 @@ class GeMpy(object):
                      rescaling_factor=None: Magic factor that multiplies the covariances)
         :return: self.Interpolator, updated self.Plot
         """
-        self.Interpolator = Interpolator(self.Data, self.Grid, *args)
+        self.Interpolator = Interpolator(self.Data, self.Grid, *args, **kwargs)
         self.Plot = PlotData(self.Data, block=self.Interpolator.block,
                              potential_field=self.Interpolator.potential_fields)
 
+    def update_data(self, update_class="Plot Data"):
+        if update_class == "Plot Data":
+            self.Plot = PlotData(self.Data)
 
 class DataManagement(object):
     """
@@ -83,8 +86,8 @@ class DataManagement(object):
     # TODO: Probably at some point I will have to make an static and dynamic data classes
     def __init__(self, x_min, x_max, y_min, y_max, z_min, z_max,
                  nx=50, ny=50, nz=50,
-                 path_i=os.getcwd(), path_f=os.getcwd()
-                 ):
+                 path_i=os.getcwd(), path_f=os.getcwd(),
+                 **kwargs):
         """
         Some of the initial parameters needed for the interpolation and visualization
         :param x_min: extent
@@ -112,13 +115,19 @@ class DataManagement(object):
         self.nz = nz
 
         # TODO choose the default source of data. So far only
-        self.Foliations = self.load_data_csv(data_type="foliations", path=path_f)
-        self.Interfaces = self.load_data_csv(data_type="Interfaces", path=path_i)
+        if path_f:
+            self.Foliations = self.load_data_csv(data_type="foliations", path=path_f, **kwargs)
+            assert set(['X', 'Y', 'Z', 'dip', 'azimuth', 'polarity', 'formation']).issubset(self.Foliations.columns), \
+                "One or more columns do not match with the expected values " + str(self.Foliations.columns)
+        else:
+            self.Foliations = pn.DataFrame(columns=['X', 'Y', 'Z', 'dip', 'azimuth', 'polarity', 'formation', 'series'])
+        if path_i:
+            self.Interfaces = self.load_data_csv(data_type="Interfaces", path=path_i, **kwargs)
+            assert set(['X', 'Y', 'Z', 'formation']).issubset(self.Interfaces.columns), \
+                "One or more columns do not match with the expected values " + str(self.Interfaces.columns)
+        else:
+            self.Interfaces = pn.DataFrame(columns=['X', 'Y', 'Z', 'formation'])
 
-        assert set(['X', 'Y', 'Z', 'formation']).issubset(self.Interfaces.columns), \
-            "One or more columns do not match with the expected values " + str(self.Interfaces.columns)
-        assert set(['X', 'Y', 'Z', 'dip', 'azimuth', 'polarity', 'formation']).issubset(self.Foliations.columns), \
-            "One or more columns do not match with the expected values " + str(self.Foliations.columns)
 
         self.formations = self._set_formations()
         self.series = self.set_series()
@@ -220,7 +229,7 @@ class Grid(object):
     """
     Class with set of functions to generate grids
     """
-    def __init__(self, spatial_parameters, grid_type="regular_3D"):
+    def __init__(self, spatial_parameters, grid_type="regular_3D", **kwargs):
         """
         Selection of grid type
         :param type: So far regular 3D or 2D grid
@@ -267,7 +276,7 @@ class Interpolator(object):
     """
     Class which contain all needed methods to perform potential field implicit modelling in theano
     """
-    def __init__(self, _data, _grid, *args):
+    def __init__(self, _data, _grid, *args,**kwargs):
         """
         Here we import all the necessary data for the interpolation
         :param _data: All values of a DataManagement object (I have to check but I would say we only need to pass
@@ -742,7 +751,6 @@ class Interpolator(object):
             # yz
             U_G = T.set_subtensor(U_G[n * 1:n * 2, 8], gi_reescale * dips_position[:, 2])   # This is z
             U_G = T.set_subtensor(U_G[n * 2:n * 3, 8], gi_reescale * dips_position[:, 1])   # This is y
-           # Deprecated U_G = U_G
 
             # Interface
             U_I = - T.stack(
