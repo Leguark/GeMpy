@@ -7,7 +7,7 @@ Created on 10/10 /2016
 
 @author: Miguel de la Varga
 
-this is only to test git
+this is only to test git 2
 
 """
 
